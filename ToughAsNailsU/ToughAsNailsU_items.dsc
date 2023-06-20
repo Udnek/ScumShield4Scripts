@@ -123,7 +123,22 @@ ToughAsNailsU_nailer_enchantment:
 #    no_id: true
 #    mechanisms:
 #        potion_effects: <list[<map[type=WATER;upgraded=false;extended=false]>]>
-
+#---------------------------
+ToughAsNailsU_special_bone_meal:
+    debug: false
+    type: item
+    material: bone_meal
+    display name: <reset><&translate[toughasnailsu.item.special_bone_meal]>
+    mechanisms:
+        custom_model_data: 900
+    recipes:
+        1:
+            type: shapeless
+            recipe_id: toughasnailsu_special_bone_meal_1
+            output_quantity: 3
+            category: misc
+            input: material:bone_meal|material:bone_meal|material:bone_meal|material:firework_star
+#---------------------------
 ToughAsNailsU_flask:
     debug: false
     type: item
@@ -157,9 +172,7 @@ ToughAsNailsU_flask_colored:
             output_quantity: 1
             category: equipment
             input: material:*_dye|material:bundle
-
-
-
+#---------------------------
 ToughAsNailsU_leaf:
     debug: false
     type: item

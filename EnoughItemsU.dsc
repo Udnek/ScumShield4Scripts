@@ -11,6 +11,8 @@ EnoughItemsU_recipe_replace_data:
         firework_star: ToughAsNailsU_oak_leaf
     denizen:toughasnailsu_wheat_wort_bottle_1:
         firework_star: ToughAsNailsU_oak_leaf
+    denizen:toughasnailsu_special_bone_meal_1:
+        firework_star: ToughAsNailsU_oak_leaf
 
 #-----------------------------------
 

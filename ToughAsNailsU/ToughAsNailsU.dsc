@@ -258,30 +258,30 @@ ToughAsNailsU_leaf_type:
 
         - choose <[material]>:
             - case azalea_leaves flowering_azalea_leaves:
-                - determine <item[toughasnailsu_azalea_leaf].with[lore=<[lore]>]>
+                - define item <item[toughasnailsu_azalea_leaf]>
             - case birch_leaves:
-                - determine <item[toughasnailsu_birch_leaf].with[lore=<[lore]>]>
+                - define item <item[toughasnailsu_birch_leaf]>
             - case cherry_leaves:
-                - determine <item[toughasnailsu_cherry_leaf].with[lore=<[lore]>]>
+                - define item <item[toughasnailsu_cherry_leaf]>
             - case spruce_leaves:
-                - determine <item[toughasnailsu_spruce_leaf].with[lore=<[lore]>]>
+                - define item <item[toughasnailsu_spruce_leaf]>
 
             - case acacia_leaves:
-                - define item <item[toughasnailsu_acacia_leaf].with[lore=<[lore]>]>
+                - define item <item[toughasnailsu_acacia_leaf]>
             - case dark_oak_leaves:
-                - define item <item[toughasnailsu_dark_oak_leaf].with[lore=<[lore]>]>
+                - define item <item[toughasnailsu_dark_oak_leaf]>
             - case mangrove_leaves:
-                - define item <item[toughasnailsu_mangrove_leaf].with[lore=<[lore]>]>
+                - define item <item[toughasnailsu_mangrove_leaf]>
             - case oak_leaves:
-                - define item <item[toughasnailsu_oak_leaf].with[lore=<[lore]>]>
+                - define item <item[toughasnailsu_oak_leaf]>
             - case jungle_leaves:
-                - define item <item[toughasnailsu_jungle_leaf].with[lore=<[lore]>]>
+                - define item <item[toughasnailsu_jungle_leaf]>
 
             - default:
                 - determine <item[air]>
 
         - define color <[location].biome.foliage_color>
-        - determine <[item].with[firework=[color=<[color]>]]>
+        - determine <[item].with[lore=<[lore]>;firework=[color=<[color]>];flag=toughasnailsu_biome:<[location].biome.name>]>
 
 ToughAsNailsU_get_food_stats:
     type: procedure
@@ -738,8 +738,7 @@ ToughAsNailsU_actions:
         after leaves decay:
             - if <util.random_chance[7]>:
                 - drop <proc[toughasnailsu_leaf_type].context[<context.location>|<context.material.name>]> <context.location> quantity:1
-                #- drop ToughAsNailsU_leaf <context.location> quantity:1
-
+                #- drop ToughAsNailsU_leaf <context.location> quantity:
         after player breaks *leaves:
             #- if <context.material.persistent>:
             #    - stop
@@ -765,7 +764,7 @@ ToughAsNailsU_anabiosis_actions:
             - determine cancelled
 
         on ToughAsNailsU_anabiosis_entity exits vehicle:
-            - if  <context.entity.is_spawned>:
+            - if <context.entity.is_spawned>:
                 - remove <context.entity>
 
         #on player kicked for flying:
@@ -776,6 +775,19 @@ ToughAsNailsU_crafting_actions:
     type: world
     debug: false
     events:
+        on ToughAsNailsU_special_bone_meal recipe formed:
+            #- if <proc[ToughAsNailsU_is_fixed_leaf].context[<context.item>]>:
+            - if <context.inventory.contains[firework_star]>:
+                - determine cancelled
+            - define biome <context.inventory.slot[<context.inventory.find_item[*leaf]>].flag[toughasnailsu_biome]>
+            #- narrate <context.inventory.find_item[*leaf]>
+            - if <[biome].contains[:]>:
+                - define lore <gray><&translate[toughasnailsu.leaf_from].with[<&translate[<[biome]>]>]>
+            - else:
+                - define lore <gray><&translate[toughasnailsu.leaf_from].with[<&translate[biome.minecraft.<[biome]>]>]>
+            - determine <context.item.with[lore=<[lore]>;flag=toughasnailsu_biome:<[biome]>]>
+
+
         on firework_rocket recipe formed:
             - if <context.inventory.contains_item[ToughAsNailsU_*_leaf]>:
                 - determine cancelled
@@ -789,16 +801,65 @@ ToughAsNailsU_crafting_actions:
             - if <proc[ToughAsNailsU_is_fixed_bottle].context[<context.item>]>:
                 - define pos:<context.inventory.find_item[glass_bottle]>
                 - if <[pos]> == -1:
-                    - define amount:<context.amount>
+                    - define amount <context.amount>
                     - wait 1t
                     - take item:glass_bottle from:<player.inventory> quantity:<[amount]>
-                    - define pos:<context.inventory.find_item[glass_bottle]>
+                    - define pos <context.inventory.find_item[glass_bottle]>
 
         after player crafts ToughAsNailsU_*:
             - if <proc[ToughAsNailsU_is_fixed_bottle].context[<context.item>]>:
-                - define pos:<context.inventory.find_item[glass_bottle]>
+                - define pos <context.inventory.find_item[glass_bottle]>
                 - if <[pos]> != -1:
                     - inventory set d:<context.inventory> o:air slot:<[pos]>
+
+        on item despawns:
+            - if <context.item.has_flag[ToughAsNailsU_to_beer]>:
+                - if <context.entity.location.light> <= 5:
+                    - define item <item[<context.item.flag[ToughAsNailsU_to_beer]>]>
+                    #- adjust def:item quantity:<context.entity.item.quantity>
+                    - drop <[item]> <context.entity.location> speed:0 quantity:<context.entity.item.quantity>
+                    - remove <context.entity>
+                - else:
+                    - adjust <player> time_lived:0t
+
+                - playeffect spit <context.entity.location> quantity:4 velocity:0,0.2,0
+                - playsound <context.entity.location> BLOCK_FIRE_EXTINGUISH volume:0.15
+
+        after cauldron level raises:
+            - announce <context.cause>
+            - define hopper <context.location.below>
+            - if <context.location.below.material.name> != hopper:
+                - stop
+            - if !<context.location.below.material.switched>:
+                - stop
+            - announce hopper_ok
+
+            - if <context.cause> == NATURAL_FILL:
+                - announce natural
+                - define output toughasnailsu_pure_water_bottle
+            - else:
+                - announce dirty
+                - define output toughasnailsu_dirty_water_bottle
+
+            - repeat <context.new_level>:
+                - if !<[hopper].inventory.contains_item[ToughAsNailsU_drinking_glass_bottle]>:
+                    - stop
+                - announce bottle_ok
+
+                - if !<[hopper].inventory.can_fit[<[output]>].quantity[1]>:
+                    - stop
+                - announce availeble_slot
+
+                - if <context.location.material.level.sub[1]> == 0:
+                    - modifyblock <context.location> cauldron
+                - else:
+                    - adjustblock <context.location> level:<context.location.material.level.sub[1]>
+
+                - take item:ToughAsNailsU_drinking_glass_bottle quantity:1 from:<[hopper].inventory>
+                - give <[output]> quantity:1 to:<[hopper].inventory> ignore_leftovers
+                #- announce OK
+
+
 
         #on player prepares anvil craft item:
         #    - define level:<context.item.enchantment_map.get[ToughAsNailsU_nailer].if_null[null]>
@@ -833,19 +894,6 @@ ToughAsNailsU_crafting_actions:
         #            - playeffect spit <context.entity.location> quantity:4 velocity:0,0.2,0
         #            - playsound <context.entity.location> BLOCK_FIRE_EXTINGUISH volume:0.15
 
-        on item despawns:
-            - if <context.item.has_flag[ToughAsNailsU_to_beer]>:
-                - if <context.entity.location.light> <= 5:
-                    - define item:<item[<context.item.flag[ToughAsNailsU_to_beer]>]>
-                    #- adjust def:item quantity:<context.entity.item.quantity>
-                    - drop <[item]> <context.entity.location> speed:0 quantity:<context.entity.item.quantity>
-                    - playeffect spit <context.entity.location> quantity:4 velocity:0,0.2,0
-                    - playsound <context.entity.location> BLOCK_FIRE_EXTINGUISH volume:0.15
-                    - remove <context.entity>
-                - else:
-                    - adjust <player> time_lived:0t
-                    - playeffect spit <context.entity.location> quantity:4 velocity:0,0.2,0
-                    - playsound <context.entity.location> BLOCK_FIRE_EXTINGUISH volume:0.15
 
 ToughAsNailsU_recipes_gui_actions:
     type: world
@@ -1036,45 +1084,46 @@ ToughAsNailsU_recipes_gui:
     size: 54
     gui: true
     definitions:
-        a1: ToughAsNailsU_drinking_glass_bottle
-        a2: ToughAsNailsU_flask
-        a3: ToughAsNailsU_flask_colored
-        a4: ToughAsNailsU_nailer_enchanted_book
+        a1: ToughAsNailsU_acacia_leaf
+        a2: ToughAsNailsU_azalea_leaf
+        a3: ToughAsNailsU_birch_leaf
+        a4: ToughAsNailsU_cherry_leaf
+        a5: ToughAsNailsU_dark_oak_leaf
+        a6: ToughAsNailsU_jungle_leaf
+        a7: ToughAsNailsU_mangrove_leaf
+        a8: ToughAsNailsU_oak_leaf
+        a9: ToughAsNailsU_spruce_leaf
 
-        b1: ToughAsNailsU_dirty_water_bottle
-        b2: ToughAsNailsU_sea_water_bottle
-        b3: ToughAsNailsU_pure_water_bottle
-        b4: ToughAsNailsU_boiling_water_bottle
+        b1: ToughAsNailsU_drinking_glass_bottle
+        b2: ToughAsNailsU_flask
+        b3: ToughAsNailsU_flask_colored
+        b4: ToughAsNailsU_nailer_enchanted_book
+        b5: ToughAsNailsU_special_bone_meal
 
-        c1: ToughAsNailsU_green_sweet_berry_tea_bottle
-        c2: ToughAsNailsU_green_glow_berry_tea_bottle
-        c3: ToughAsNailsU_green_sugar_tea_bottle
+        c1: ToughAsNailsU_dirty_water_bottle
+        c2: ToughAsNailsU_sea_water_bottle
+        c3: ToughAsNailsU_pure_water_bottle
+        c4: ToughAsNailsU_boiling_water_bottle
 
-        d1: ToughAsNailsU_melon_juice_bottle
-        d2: ToughAsNailsU_carrot_juice_bottle
-        d3: ToughAsNailsU_sweet_berries_juice_bottle
-        d4: ToughAsNailsU_amethyst_water_bottle
+        d1: ToughAsNailsU_green_sweet_berry_tea_bottle
+        d2: ToughAsNailsU_green_glow_berry_tea_bottle
+        d3: ToughAsNailsU_green_sugar_tea_bottle
 
-        e1: ToughAsNailsU_wheat_wort_bottle
-        e2: ToughAsNailsU_wheat_beer_bottle
+        e1: ToughAsNailsU_melon_juice_bottle
+        e2: ToughAsNailsU_carrot_juice_bottle
+        e3: ToughAsNailsU_sweet_berries_juice_bottle
+        e4: ToughAsNailsU_amethyst_water_bottle
 
-        f1: ToughAsNailsU_acacia_leaf
-        f2: ToughAsNailsU_azalea_leaf
-        f3: ToughAsNailsU_birch_leaf
-        f4: ToughAsNailsU_cherry_leaf
-        f5: ToughAsNailsU_dark_oak_leaf
-        f6: ToughAsNailsU_jungle_leaf
-        f7: ToughAsNailsU_mangrove_leaf
-        f8: ToughAsNailsU_oak_leaf
-        f9: ToughAsNailsU_spruce_leaf
+        f1: ToughAsNailsU_wheat_wort_bottle
+        f2: ToughAsNailsU_wheat_beer_bottle
 
     slots:
-    - [a1] [a2] [a3] [a4] [] [] [] [] []
-    - [b1] [b2] [b3] [b4] [] [] [] [] []
-    - [c1] [c2] [c3] [] [] [] [] [] []
-    - [d1] [d2] [d3] [d4] [] [] [] [] []
-    - [e1] [e2] [] [] [] [] [] [] []
-    - [f1] [f2] [f3] [f4] [f5] [f6] [f7] [f8] [f9]
+    - [a1] [a2] [a3] [a4] [a5] [a6] [a7] [a8] [a9]
+    - [b1] [b2] [b3] [b4] [] [] [] [] [b5]
+    - [c1] [c2] [c3] [c4] [] [] [] [] []
+    - [d1] [d2] [d3] [] [] [] [] [] []
+    - [e1] [e2] [e3] [e4] [] [] [] [] []
+    - [f1] [f2] [] [] [] [] [] [] []
 
 #-------------------------------
 ToughAsNailsU_commands:
