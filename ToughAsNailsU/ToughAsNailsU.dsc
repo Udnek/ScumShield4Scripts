@@ -1,9 +1,6 @@
 ToughAsNailsU_blocks_data:
     type: data
 
-    #resoursepack:
-    #    url:
-
     blocks_around_radius: 6
 
     blocks_around:
@@ -237,10 +234,10 @@ ToughAsNailsU_weather_type:
         - if !<[location].world.has_storm>:
             - determine 0
 
-        - if <[location].y> < <[location].highest.y>:
+        - if <[location].downfall_type> == NONE:
             - determine 0
 
-        - if !( ( <[location].biome.temperature> >= 0.15 ) && ( <[location].biome.temperature> <= 0.95 ) ):
+        - if <[location].y> < <[location].highest.y>:
             - determine 0
 
         - determine 1
@@ -252,9 +249,9 @@ ToughAsNailsU_leaf_type:
     definitions: location|material
     script:
         - if <[location].biome.name.contains[:]>:
-            - define lore <gray><&translate[toughasnailsu.collected_in].with[<&translate[<[location].biome.name>]>]>
+            - define lore <gray><&translate[lore.toughasnailsu.collected_in].with[<&translate[<[location].biome.name>]>]>
         - else:
-            - define lore <gray><&translate[toughasnailsu.collected_in].with[<&translate[biome.minecraft.<[location].biome.name>]>]>
+            - define lore <gray><&translate[lore.toughasnailsu.collected_in].with[<&translate[biome.minecraft.<[location].biome.name>]>]>
 
         - choose <[material]>:
             - case azalea_leaves flowering_azalea_leaves:
@@ -307,10 +304,15 @@ ToughAsNailsU_food_effect_lore:
         - define minutes <[duration].in_minutes.round_down>
         - define seconds <[duration].in_seconds.sub[<[minutes].mul[60]>]>
         - define buff <[stats].get[2]>
+        - if <[minutes].length> == 1:
+            - define minutes 0<[minutes]>
+        - if <[seconds].length> == 1:
+            - define seconds 0<[seconds]>
+
         - if <[buff]> > 0:
-            - determine <reset><&translate[toughasnailsu.item_lore.heat].with[<&color[#FFAA00]><[stats].get[2]>|<&color[#FFAA00]><[minutes]>:<[seconds]>]>
+            - determine <reset><&translate[lore.toughasnailsu.effect_heat].with[<&color[#FFAA00]><[stats].get[2]>|<&color[#FFAA00]><[minutes]>:<[seconds]>]>
         - else:
-            - determine <reset><&translate[toughasnailsu.item_lore.freeze].with[<&color[#55FFFF]><[stats].get[2]>|<&color[#55FFFF]><[minutes]>:<[seconds]>]>
+            - determine <reset><&translate[lore.toughasnailsu.effect_freeze].with[<&color[#55FFFF]><[stats].get[2]>|<&color[#55FFFF]><[minutes]>:<[seconds]>]>
 
 ToughAsNailsU_food_thirst_lore:
     type: procedure
@@ -318,7 +320,7 @@ ToughAsNailsU_food_thirst_lore:
     definitions: item_name
     script:
         - define stats <list[<script[toughasnailsu_items_data].data_key[stats.<[item_name]>]>]>
-        - determine <reset><&font[toughasnailsu]><&translate[toughasnailsu.thirst.lore.level.<[stats].get[1]>]>
+        - determine <reset><&font[toughasnailsu:font]><&translate[toughasnailsu.thirst.lore.level.<[stats].get[1]>]>
 
 ToughAsNailsU_food_lore:
     type: procedure
@@ -362,11 +364,23 @@ ToughAsNailsU_is_flaskable:
         - if <[data].contains[<[item_name]>]>:
             - determine true
         - determine false
+
+ToughAsNailsU_get_special_bone_meal:
+    type: procedure
+    debug: false
+    definitions: item|leaf|biome
+    script:
+        - if <[biome].contains[:]>:
+            - define lore <gray><&translate[lore.toughasnailsu.leaf_from].with[<&translate[<[biome]>]>]>
+        - else:
+            - define lore <gray><&translate[lore.toughasnailsu.leaf_from].with[<&translate[biome.minecraft.<[biome]>]>]>
+        - define lore <[lore]><&nl><gray><&translate[lore.toughasnailsu.leaf_type].with[<item[<[leaf]>].display>]>
+        - determine <[item].with[lore=<[lore]>].with_flag[toughasnailsu_biome:<[biome]>].with_flag[toughasnailsu_leaf:<[leaf].script.name>]>
+
 #--------------------------------
 ToughAsNailsU_send_to_anabiosis:
     type: task
     debug: false
-    #definitions: __player
     script:
         - definemap attributes:
             GENERIC_MOVEMENT_SPEED:
@@ -377,6 +391,8 @@ ToughAsNailsU_send_to_anabiosis:
         - flag <player> ToughAsNailsU.anabiosis
         - adjust <player> add_attribute_modifiers:<[attributes]>
         - adjust <player> passenger:<entity[ToughAsNailsU_anabiosis_entity]>
+
+        - run toughasnailsu_advancement_anabiosis
         #- adjust <player> spectate:<player.passenger>
         #/ex adjust <player> passenger:<entity[ToughAsNailsU_anabiosis_entity]>
         #- cast <player> jump durathide_particles no_icon no_clear
@@ -386,7 +402,6 @@ ToughAsNailsU_send_to_anabiosis:
 ToughAsNailsU_remove_anabiosis:
     type: task
     debug: false
-    #definitions: __player
     script:
         - flag <player> ToughAsNailsU.anabiosis:!
         - adjust <player> remove_attribute_modifiers:GENERIC_MOVEMENT_SPEED
@@ -399,82 +414,74 @@ ToughAsNailsU_remove_anabiosis:
 ToughAsNailsU_show_hud:
     type: task
     debug: false
-    definitions: __player
     script:
-        - define temperature:<player.flag[ToughAsNailsU.temperature]>
-        - define freeze_color:<color[55,92,197]>
-        - define heat_color:<color[#f89523]>
-
-            #- define output_color:<&color[255,255,255]>
+        - define temperature <player.flag[ToughAsNailsU.temperature]>
+        - define freeze_color <color[55,92,197]>
+        - define heat_color <color[#f89523]>
 
         - if <player.has_flag[ToughAsNailsU.anabiosis]>:
-            - define output_color:<&color[255,255,255]>
-            - define icon:<&translate[toughasnailsu.temperature.anabiosis]>
+            - define output_color <&color[255,255,255]>
+            - define icon <&translate[hud.toughasnailsu.temperature.anabiosis]>
         - else:
-            - define temperature_grows:<player.has_flag[ToughAsNailsU.temperature_grows]>
+            - define temperature_grows <player.has_flag[ToughAsNailsU.temperature_grows]>
 
             - if <player.has_flag[ToughAsNailsU.temperature_stabilization]>:
-                - define icon:<&translate[toughasnailsu.temperature.body.normal]>
+                - define icon <&translate[hud.toughasnailsu.temperature.body.normal]>
             - else if <[temperature_grows]>:
-                - define icon:<&translate[toughasnailsu.temperature.body.grows]>
+                - define icon <&translate[hud.toughasnailsu.temperature.body.grows]>
             - else:
-                - define icon:<&translate[toughasnailsu.temperature.body.falls]>
+                - define icon <&translate[hud.toughasnailsu.temperature.body.falls]>
 
             - if <[temperature]> > 0:
                 - if <[temperature]> == 1020:
-                    - define output_color:<&color[255,255,255]>
-                    - define icon:<&translate[toughasnailsu.temperature.heat.<util.random.int[1].to[3]>]>
+                    - define output_color <&color[255,255,255]>
+                    - define icon <&translate[hud.toughasnailsu.temperature.heat.<util.random.int[1].to[3]>]>
                 - else:
-                    - define output_color:<proc[toughasnailsu_temperature_color_calculator].context[<[heat_color]>|<[temperature]>]>
+                    - define output_color <proc[toughasnailsu_temperature_color_calculator].context[<[heat_color]>|<[temperature]>]>
             - else:
                 - if <[temperature]> == -1020:
-                    - define output_color:<&color[255,255,255]>
-                    - define icon:<&translate[toughasnailsu.temperature.freeze.<util.random.int[1].to[3]>]>
+                    - define output_color <&color[255,255,255]>
+                    - define icon <&translate[hud.toughasnailsu.temperature.freeze.<util.random.int[1].to[3]>]>
                 - else:
-                    - define output_color:<proc[toughasnailsu_temperature_color_calculator].context[<[freeze_color]>|<[temperature].mul[-1]>]>
+                    - define output_color <proc[toughasnailsu_temperature_color_calculator].context[<[freeze_color]>|<[temperature].mul[-1]>]>
 
-        - define temperature_message:<&font[toughasnailsu]><[output_color]><&translate[space.85]><&font[toughasnailsu]><[icon]>
+        - define temperature_message <&font[toughasnailsu:font]><[output_color]><&font[toughasnailsu:font]><[icon]>
+        - define temperature_message <[temperature_message].proc[hudu_get_ready_message].context[16|-8]>
 
         #-------------------------
         - if <player.has_effect[luck]>:
-            - define thirst_type:thirst_thirsty
+            - define thirst_type thirst_thirsty
         - else:
-            - define thirst_type:thirst
+            - define thirst_type thirst
 
-        - define thirst_message:<&translate[space.1]><&font[toughasnailsu]><&translate[toughasnailsu.<[thirst_type]>.hud.level.<player.flag[ToughAsNailsU.thirst].round>]>
-
-
+        - define thirst_message <&font[toughasnailsu:font]><&translate[toughasnailsu.<[thirst_type]>.hud.level.<player.flag[ToughAsNailsU.thirst].round>]>
+        - define thirst_message <[thirst_message].proc[hudu_get_ready_message].context[82|8]>
         #-------------------------
-        - define oxygen:<player.oxygen.in_seconds>
-        - define max_oxygen:<player.max_oxygen.in_seconds>
 
-        - if ( <[oxygen]> == <[max_oxygen]> ) || ( <[oxygen]> <= 0 ):
-            - define oxygen_message:<&translate[space.-81]><&font[toughasnailsu]><&translate[toughasnailsu.oxygen.level.0]>
-        - else:
-            - define oxygen_message:<&translate[space.-81]><&font[toughasnailsu]><&translate[toughasnailsu.oxygen.level.<[oxygen].div[<[max_oxygen]>].mul[20].round>]>
+        #- define oxygen:<player.oxygen.in_seconds>
+        #- define max_oxygen:<player.max_oxygen.in_seconds>
+        #
+        #- if ( <[oxygen]> == <[max_oxygen]> ) || ( <[oxygen]> <= 0 ):
+        #    - define oxygen_message:<&translate[space.-81]><&font[toughasnailsu]><&translate[toughasnailsu.oxygen.level.0]>
+        #- else:
+        #    - define oxygen_message:<&translate[space.-81]><&font[toughasnailsu]><&translate[toughasnailsu.oxygen.level.<[oxygen].div[<[max_oxygen]>].mul[20].round>]>
 
         #----------------------------
-        - define overlay_message:<&font[toughasnailsu]><&translate[space.-1024]><&translate[space.-1024]><&translate[toughasnailsu.temperature.overlay]><&translate[space.-1024]><&translate[space.-1024]>
+        - define overlay_message <&translate[space.-1024]><&translate[space.-1024]><&font[toughasnailsu:font]><&translate[hud.toughasnailsu.temperature.overlay]><&translate[space.-1024]><&translate[space.-1024]><&translate[space.-1]>
         - if <[temperature]> < -768:
-            - define overlay_message:<&color[<[freeze_color]>]><[overlay_message]>
+            - define overlay_message <&color[<[freeze_color]>]><[overlay_message]>
         - else if <[temperature]> > 768:
-            - define overlay_message:<&color[<[heat_color]>]><[overlay_message]>
+            - define overlay_message <&color[<[heat_color]>]><[overlay_message]>
         - else:
-            - define overlay_message:<empty>
-
-        #- define overlay_message:<empty>
-        #- define overlay_message:SUYS
-        #- define overlay_message:<&translate[space.-1024]><&translate[space.-1024]><&translate[temperature.overlay]><&translate[space.1024]><&translate[space.1024]><&translate[space.-1024]><&translate[space.-1024]><&translate[space.-1024]><&translate[space.-1024]>
-        #- if <[temperature]> < -768:
-        #    - title title:<&color[<[freeze_color]>]><[overlay_message]> fade_in:0t stay:1s fade_out:3s targets:<player>
-        #- else if <[temperature]> > 768:
-        #    - title title:<&color[<[heat_color]>]><[overlay_message]> fade_in:0t stay:1s fade_out:3s targets:<player>
-
-        #- define overlay_message:<empty>
+            - define overlay_message <empty>
 
         #----------------------------
+        - define final_message <[temperature_message]><&color[#4e5c24]><[thirst_message]><[overlay_message]>
+        #<[temperature_message]><&color[#4e5c24]><[thirst_message]><[overlay_message]>
 
-        - actionbar <[temperature_message]><&color[#4e5c24]><[thirst_message]><&color[#4e5c24]><[oxygen_message]><[overlay_message]> targets:<player>
+        - run hudu_create_ticket def:ToughAsNailsU|<[final_message]>
+
+        ###- actionbar <[temperature_message]><&color[#4e5c24]><[thirst_message]><&color[#4e5c24]><[oxygen_message]><[overlay_message]> targets:<player>
         #- actionbar <&color[#4e5c24]><[thirst_message]> targets:<player>
 
 
@@ -482,7 +489,7 @@ ToughAsNailsU_show_hud:
 ToughAsNailsU_adjust_thirst:
     type: task
     debug: false
-    definitions: __player|amount
+    definitions: amount
     script:
         - define result:<player.flag[ToughAsNailsU.thirst].add[<[amount]>]>
         - if <[result]> < 20:
@@ -497,9 +504,9 @@ ToughAsNailsU_adjust_thirst:
 ToughAsNailsU_adjust_temperature:
     type: task
     debug: false
-    definitions: __player|amount
+    definitions: amount
     script:
-        - define result:<player.flag[ToughAsNailsU.temperature].add[<[amount]>]>
+        - define result <player.flag[ToughAsNailsU.temperature].add[<[amount]>]>
         - if <[result]> <= 1020:
             - if <[result]> >= -1020:
                 - flag <player> ToughAsNailsU.temperature:+:<[amount]>
@@ -511,17 +518,17 @@ ToughAsNailsU_adjust_temperature:
 ToughAsNailsU_autoupdate_hud:
     type: task
     debug: false
-    definitions: __player
     script:
         - while <player.is_online>:
             - if <player.gamemode> matches SURVIVAL|ADVENTURE:
                 - run ToughAsNailsU_show_hud def:<player>
+            - else:
+                - run hudu_clear_ticket def:ToughAsNailsU
             - wait 5t
 
 ToughAsNailsU_autoupdate_thirst:
     type: task
     debug: false
-    definitions: __player
     script:
         - while <player.is_online>:
             - if <player.is_spawned> && ( <player.gamemode> matches SURVIVAL|ADVENTURE ):
@@ -529,7 +536,7 @@ ToughAsNailsU_autoupdate_thirst:
                 - if <player.has_effect[luck]>:
                     - foreach <player.effects_data> as:effect:
                         - if <[effect].get[type]> == luck:
-                            - run toughasnailsu_adjust_thirst def:<player>|<element[-0.05].mul[<[effect].get[amplifier].add[1]>]>
+                            - run toughasnailsu_adjust_thirst def:<element[-0.05].mul[<[effect].get[amplifier].add[1]>]>
                             - foreach stop
 
                 - if <player.flag[ToughAsNailsU.thirst]> == 0:
@@ -541,7 +548,6 @@ ToughAsNailsU_autoupdate_thirst:
 ToughAsNailsU_autoupdate_temperature:
     type: task
     debug: false
-    definitions: __player
     script:
         - define blocks_below_data <script[toughasnailsu_blocks_data].data_key[blocks_below]>
         - define blocks_around_impact 0
@@ -565,9 +571,9 @@ ToughAsNailsU_autoupdate_temperature:
                     - define armor_add <[armor].get[add]>
 
                 - else if <[step].mod[7]> == 0:
-                    - define biome <player.location.biome.name>
+                    #- define biome <player.location.biome.name>
                     - define biome_humidity <player.location.biome.humidity.round_to[3]>
-                    - define biome_temperature <player.location.biome.temperature.round_to[3]>
+                    - define biome_temperature <player.location.temperature.round_to[3]>
                     - define sun <proc[toughasnailsu_true_sunlight].context[<player.location>]>
                     - define sun_final <[sun].sub[0.65].mul[11]>
                     #- define time <proc[toughasnailsu_time_to_sin].context[<player.location.world.time>].round_to[3]>
@@ -583,12 +589,17 @@ ToughAsNailsU_autoupdate_temperature:
                 - define add_impact <[blocks_around_impact].add[<[block_below_impact]>].add[<[biome_temperature].sub[0.69].mul[38]>].add[<[altitude_impact]>].add[<[activity].mul[5]>].add[<[sun_final]>].add[<[armor_add]>].add[<[weather].mul[-10]>].add[<[wet].mul[-45]>]>
                 - define mull_impact <[biome_humidity].add[0.8].mul[<[armor_mul]>]>
                 - define result <[add_impact].mul[<[mull_impact]>].add[<[food]>]>
+                - if <player.has_effect[fire_resistance]>:
+                    - if <[result]> > 0:
+                        - define result 0
                 #- define result <[blocks_around_impact].add[<[block_below_impact]>].mul[1].add[<[biome_temperature].sub[0.69].mul[35]>].add[<[altitude].sub[70].mul[-0.05]>].add[<[activity].mul[5]>].add[<[time].sub[0.7].mul[10]>].add[<[armor_add]>].add[<[weather].mul[-10]>].mul.add[<[food]>]]>
                 - define final_result <[result].mul[0.15]>
 
+
+
                 #- define stabilization false
                 #- flag <player> ToughAsNailsU.temperature_stabilization:!
-                - if <[final_result].abs> < 2:
+                - if <[result].abs> < 13:
                     - define temperature <player.flag[ToughAsNailsU.temperature]>
                     - flag <player> ToughAsNailsU.temperature_stabilization:true
                     - if <[temperature].abs> < 2:
@@ -598,13 +609,15 @@ ToughAsNailsU_autoupdate_temperature:
                 - else:
                     - flag <player> ToughAsNailsU.temperature_stabilization:!
 
-                - if <[final_result]> > 0:
+                - if <[result]> > 0:
                     - flag <player> ToughAsNailsU.temperature_grows:true
                 - else:
                     - flag <player> ToughAsNailsU.temperature_grows:!
 
+
+
                 - define old_temperature <player.flag[ToughAsNailsU.temperature]>
-                - run ToughAsNailsU_adjust_temperature def:<player>|<[final_result]>
+                - run ToughAsNailsU_adjust_temperature def:<[final_result]>
                 - define temperature <player.flag[ToughAsNailsU.temperature]>
 
                 - if !<player.has_flag[ToughAsNailsU.anabiosis]>:
@@ -614,18 +627,18 @@ ToughAsNailsU_autoupdate_temperature:
                         - else:
                             - adjust <player> freeze_duration:5s
                             - hurt 1 <player> cause:FREEZE
+                            - run toughasnailsu_advancement_overfreeze
                     - else if <[temperature]> == 1020:
                         - adjust <player> fire_time:2s
+                        - run toughasnailsu_advancement_overheat
                 - else:
                     - if <[final_result]> > 0:
                         - run toughasnailsu_remove_anabiosis
 
                 - if <server.has_flag[ToughAsNailsU.debug]>:
-                    - define string "<green>temp:<player.flag[ToughAsNailsU.temperature]><white>|step:<[step]>|b_around:<[blocks_around_impact]> b_below:<[block_below_impact]>|biome:<[biome]> <yellow>hum:<[biome_humidity]> <green>temp:<[biome_temperature]><white>|altitude:<[altitude_impact]>|sun:<[sun]> sun_final:<[sun_final]>|activity:<[activity]>|wet:<[wet]>|food:<[food]> expire:<player.flag_expiration[ToughAsNailsU.food_temperature].from_now.formatted.if_null[0]>|weather:<[weather]>|armor_mul:<[armor_mul]>  armor_add:<[armor_add]>|result:<[result]>|<red>final_result:<[final_result]>"
+                    - define string "<green>temp:<player.flag[ToughAsNailsU.temperature]><white>|step:<[step]>|b_around:<[blocks_around_impact]> b_below:<[block_below_impact]>|biome:<player.location.biome.name> <yellow>hum:<[biome_humidity]> <green>temp:<[biome_temperature]><white>|altitude:<[altitude_impact]>|sun:<[sun]> sun_final:<[sun_final]>|activity:<[activity]>|wet:<[wet]>|food:<[food]> expire:<player.flag_expiration[ToughAsNailsU.food_temperature].from_now.formatted.if_null[0]>|weather:<[weather]>|armor_mul:<[armor_mul]>  armor_add:<[armor_add]>|result:<[result]>|<red>final_result:<[final_result]>"
                     - sidebar set title:ToughAsNailsU_autoupdate values:<[string]> players:<player>
             - wait 3t
-
-
 
 
 #--------------------------------
@@ -639,9 +652,9 @@ ToughAsNailsU_base_actions:
             - if !<player.has_flag[ToughAsNailsU.temperature]>:
                 - flag <player> ToughAsNailsU.temperature:0
 
-            - run ToughAsNailsU_autoupdate_temperature def:<player>
-            - run ToughAsNailsU_autoupdate_thirst def:<player>
-            - run ToughAsNailsU_autoupdate_hud def:<player>
+            - run ToughAsNailsU_autoupdate_temperature
+            - run ToughAsNailsU_autoupdate_thirst
+            - run ToughAsNailsU_autoupdate_hud
 
             - if <player.has_flag[ToughAsNailsU.anabiosis]>:
                 - run toughasnailsu_send_to_anabiosis
@@ -669,10 +682,10 @@ ToughAsNailsU_actions:
             - define old <player.food_level>
             - if <context.item.if_null[null]> == null:
                 - if <[new]> < <[old]>:
-                    - run ToughAsNailsU_adjust_thirst def:<player>|-1
+                    - run ToughAsNailsU_adjust_thirst def:-1
 
         after player consumes potion:
-            - run ToughAsNailsU_adjust_thirst def:<player>|3
+            - run ToughAsNailsU_adjust_thirst def:3
             - if <context.item.effects_data.get[1].get[type]> matches WATER|MUNDANE|THICK:
                 - if <util.random_chance[80]>:
                     - cast luck duration:20s amplifier:0 <player>
@@ -687,16 +700,11 @@ ToughAsNailsU_actions:
 
             - take slot:<[slot]> quantity:1
 
-            #TODO FIX
             - define item_stats <proc[toughasnailsu_get_food_stats].context[<[item]>]>
             - if <[item_stats]> != null:
-                - run ToughAsNailsU_adjust_thirst def:<player>|<[item_stats].get[1]>
+                - run ToughAsNailsU_adjust_thirst def:<[item_stats].get[1]>
                 - flag <player> ToughAsNailsU.food_temperature:<[item_stats].get[2]> expire:<[item_stats].get[3]>
 
-            #- if <[item].has_flag[ToughAsNailsU_temperature]>:
-            #    - flag <player> ToughAsNailsU.food_temperature:<[item].flag[ToughAsNailsU_temperature]> expire:25s
-            #- if <[item].has_flag[ToughAsNailsU_thirst]>:
-            #    - run ToughAsNailsU_adjust_thirst def:<player>|<[item].flag[ToughAsNailsU_thirst]>
             - if <[item].has_flag[ToughAsNailsU_dirty]>:
                 - if <util.random_chance[80]>:
                     - cast luck duration:20s amplifier:0 <player> no_clear
@@ -776,16 +784,10 @@ ToughAsNailsU_crafting_actions:
     debug: false
     events:
         on ToughAsNailsU_special_bone_meal recipe formed:
-            #- if <proc[ToughAsNailsU_is_fixed_leaf].context[<context.item>]>:
             - if <context.inventory.contains[firework_star]>:
                 - determine cancelled
-            - define biome <context.inventory.slot[<context.inventory.find_item[*leaf]>].flag[toughasnailsu_biome]>
-            #- narrate <context.inventory.find_item[*leaf]>
-            - if <[biome].contains[:]>:
-                - define lore <gray><&translate[toughasnailsu.leaf_from].with[<&translate[<[biome]>]>]>
-            - else:
-                - define lore <gray><&translate[toughasnailsu.leaf_from].with[<&translate[biome.minecraft.<[biome]>]>]>
-            - determine <context.item.with[lore=<[lore]>;flag=toughasnailsu_biome:<[biome]>]>
+            - define leaf <context.inventory.slot[<context.inventory.find_item[*leaf]>]>
+            - determine <proc[ToughAsNailsU_get_special_bone_meal].context[<context.item>|<[leaf]>|<[leaf].flag[toughasnailsu_biome]>]>
 
 
         on firework_rocket recipe formed:
@@ -825,6 +827,7 @@ ToughAsNailsU_crafting_actions:
                 - playeffect spit <context.entity.location> quantity:4 velocity:0,0.2,0
                 - playsound <context.entity.location> BLOCK_FIRE_EXTINGUISH volume:0.15
 
+        # TODO FIX IT
         after cauldron level raises:
             - announce <context.cause>
             - define hopper <context.location.below>
@@ -832,23 +835,23 @@ ToughAsNailsU_crafting_actions:
                 - stop
             - if !<context.location.below.material.switched>:
                 - stop
-            - announce hopper_ok
+            #- announce hopper_ok
 
             - if <context.cause> == NATURAL_FILL:
-                - announce natural
+                #- announce natural
                 - define output toughasnailsu_pure_water_bottle
             - else:
-                - announce dirty
+                #- announce dirty
                 - define output toughasnailsu_dirty_water_bottle
 
             - repeat <context.new_level>:
                 - if !<[hopper].inventory.contains_item[ToughAsNailsU_drinking_glass_bottle]>:
                     - stop
-                - announce bottle_ok
+                #- announce bottle_ok
 
                 - if !<[hopper].inventory.can_fit[<[output]>].quantity[1]>:
                     - stop
-                - announce availeble_slot
+                #- announce availeble_slot
 
                 - if <context.location.material.level.sub[1]> == 0:
                     - modifyblock <context.location> cauldron
@@ -900,61 +903,14 @@ ToughAsNailsU_recipes_gui_actions:
     debug: false
     events:
         after player clicks item in ToughAsNailsU_recipes_gui:
-            - if ( <context.item.material.name> != air ) && ( <context.item.recipe_ids.size> > 0 ):
-                - run EnoughItemsU_open_recipe_gui def:<player>|<context.item>|1|false|ToughAsNailsU_recipes_gui
+            - run EnoughItemsU_open_new_recipe_gui def:<context.item>
 
 #------------------------
-ToughAsNailsU_flask_put_in_proc_________:
+ToughAsNailsU_flask_put_in:
     type: procedure
     debug: false
     definitions: flask|item
     script:
-        #- define item_a:<[item]>
-        ##- adjust def:item_a quantity:2
-        #- adjust def:item_a material:feather
-        #- define flask_contents:<list[<[item_a]>]>
-        #- adjust def:flask inventory_contents:<[flask_contents]>
-        #- determine <map[flask=<[flask]>;item=<[item]>;amount=1]>
-
-        - define item_f <[item].with[material=feather;quantity=1]>
-        #- flag <[item_f]> ToughAsNailsU_flaskable:!
-
-        #- define amount:1
-        - if <element[64].sub[<[flask].inventory_contents.size>]> >= <[item].quantity>:
-            - define amount:<[item].quantity>
-            - define item:<item[air]>
-        - else:
-            - define amount:<element[64].sub[<[flask].inventory_contents.size>]>
-            - define item <[item].with[quantity=<[item].quantity.sub[<[amount]>]>]>
-
-        #- narrate <[item_0]>
-        #- define flask_content:<list[<[item_0]>]>
-        #- define flask_content:<list[<item[feather]>]>
-        #- narrate <[item_0]>
-        - define flask_content <[item_f].repeat_as_list[<[amount]>]>
-        #- narrate <[flask_content].size> targets:<server.online_players>
-        #- narrate <[flask]>
-        - define flask <[flask].with[inventory_contents=<[flask].inventory_contents.include[<[flask_content]>]>]>
-        #- narrate <entry[flask].result> targets:<server.online_players>
-        #- define flask <entry[flask].result>
-        #- narrate <[item]> targets:<server.online_players>
-        #- narrate <[item_0]> targets:<server.online_players>
-        #- narrate <[flask_content]> targets:<server.online_players>
-        #- adjust def:flask inventory_contents:<[flask_content]>
-        #- debug debug <[flask]>
-        #- narrate <[flask]>
-
-        #- definemap result flask:<[flask]> item:<[item]> amount:<[amount]>
-        #- determine <[result]>
-        - determine <map[flask=<[flask]>;item=<[item]>;amount=<[amount]>]>
-
-ToughAsNailsU_flask_put_in:
-    type: task
-    debug: false
-    definitions: __player|flask|item|slot|flask_in_cursor
-    script:
-
-        #- define item_f <[item].with[material=feather;quantity=1;flag=ToughAsNailsU_flaskable:!]>
         - define item_f <item[feather].with[custom_model_data=<[item].custom_model_data>;flag=item:<[item].script.name>]>
 
         - if <element[64].sub[<[flask].inventory_contents.size>]> >= <[item].quantity>:
@@ -965,23 +921,15 @@ ToughAsNailsU_flask_put_in:
             - define item <[item].with[quantity=<[item].quantity.sub[<[amount]>]>]>
 
         - define flask_content <[item_f].repeat_as_list[<[amount]>]>
-
         - define flask <[flask].with[inventory_contents=<[flask].inventory_contents.include[<[flask_content]>]>]>
-        - define flask <[flask]>
 
-        - if <[flask_in_cursor]>:
-            - inventory set o:<[item]> slot:<[slot]>
-            - adjust <player> item_on_cursor:<[flask]>
-        - else:
-            - inventory set o:<[flask]> slot:<[slot]>
-            - adjust <player> item_on_cursor:<[item]>
+        - determine <map[flask=<[flask]>;item=<[item]>;amount=<[amount]>]>
 
-        - give toughasnailsu_drinking_glass_bottle quantity:<[amount]>
 
-ToughAsNailsU_flask_get:
-    type: task
+ToughAsNailsU_flask_get_item:
+    type: procedure
     debug: false
-    definitions: __player|flask|slot
+    definitions: flask
     script:
         - define item <[flask].inventory_contents.get[1]>
         - define flask <[flask].with[inventory_contents=<[flask].inventory_contents.remove[1]>]>
@@ -989,25 +937,23 @@ ToughAsNailsU_flask_get:
         - define item <item[<[item].flag[item]>]>
         - define item <[item].with[custom_model_data=<[flask].custom_model_data>]>
         - define item <[item].with[display=<[flask].display> <reset>[<[item].display><reset>]]>
-        #- define item <[item].with[material=<item[<[item].script.name>].material.name>]>
 
-        - flag <[item]> ToughAsNailsU_flask:<[flask]>
-        - flag <[item]> ToughAsNailsU_unstackable:<util.random_uuid>
+        - define item <[item].with[flag=ToughAsNailsU_flask:<[flask]>]>
+        - define item <[item].with[flag=ToughAsNailsU_unstackable:<util.random_uuid>]>
 
-        - inventory set o:<[item]> slot:<[slot]>
+        - determine <[item]>
+
 
 ToughAsNailsU_flask_back_to_flask:
-    type: task
+    type: procedure
     debug: false
-    definitions: __player|item|slot
+    definitions: item
     script:
         - define flask <[item].flag[ToughAsNailsU_flask]>
-        #- define true_item <item[<[item].script.name>].with[material=feather]>
         - define item_f <item[feather].with[custom_model_data=<item[<[item].script.name>].custom_model_data>;flag=item:<[item].script.name>]>
-
         - define flask <[flask].with[inventory_contents=<[flask].inventory_contents.include[<[item_f]>]>]>
 
-        - inventory set o:<[flask]> slot:<[slot]>
+        - determine <[flask]>
 
 
 ToughAsNailsU_flask_actions:
@@ -1028,24 +974,16 @@ ToughAsNailsU_flask_actions:
                     - determine <[flask]>
             - determine cancelled
 
-        on player right clicks block with:ToughAsNailsU_flask:
+        on player right clicks block with:ToughAsNailsU_flask using:either_hand:
             - determine cancelled passively
             - if <player.item_cooldown[bundle].in_ticks> == 0:
                 - if <context.item.inventory_contents.size> > 0:
-                    #- narrate <context.item>
-                    #- wait 1s
-                    - run ToughAsNailsU_flask_get def:<player>|<context.item>|<player.held_item_slot>
-
-        on player right clicks block with:ToughAsNailsU_flask using:off_hand:
-            - determine cancelled passively
-            - if <player.item_cooldown[bundle].in_ticks> == 0:
-                - if <context.item.inventory_contents.size> > 0:
-                    - run toughasnailsu_flask_get def:<player>|<context.item>|41
+                    - inventory set slot:<context.hand> o:<context.item.proc[toughasnailsu_flask_get_item]>
 
         on player right clicks ToughAsNailsU_* in inventory with:air:
             - if <context.item.has_flag[ToughAsNailsU_flask]>:
                 - determine cancelled passively
-                - run ToughAsNailsU_flask_back_to_flask def:<player>|<context.item>|<context.slot>
+                - inventory set slot:<context.slot> o:<context.item.proc[toughasnailsu_flask_back_to_flask]>
 
         on player right clicks item in inventory with:ToughAsNailsU_flask:
             - determine cancelled passively
@@ -1054,12 +992,12 @@ ToughAsNailsU_flask_actions:
             - define item <context.item>
             - if <[flask].inventory_contents.size> < 64:
                 - if <proc[ToughAsNailsU_is_flaskable].context[<[item]>]>:
-                    - run ToughAsNailsU_flask_put_in def:<player>|<[flask]>|<[item]>|<context.slot>|true
-                    ##- flag <[item]> ToughAsNailsU_flaskable:!
-                    #- define result:<proc[toughasnailsu_flask_put_in].context[<[flask]>|<[item]>]>
-                    #- inventory set o:<[result].get[item]> slot:<context.slot>
-                    #- adjust <player> item_on_cursor:<[result].get[flask]>
-                    #- give toughasnailsu_drinking_glass_bottle quantity:<[result].get[amount]>
+                    - define result <[flask].proc[toughasnailsu_flask_put_in_proc].context[<[item]>]>
+                    - adjust <player> item_on_cursor:<[result].get[flask]>
+                    - inventory set o:<[result].get[item]> slot:<context.slot>
+                    - give toughasnailsu_drinking_glass_bottle quantity:<[result].get[amount]>
+                    - if <[result].get[flask].inventory_contents.size> == 64:
+                        - run toughasnailsu_advancement_flask_full
 
 
         on player right clicks ToughAsNailsU_flask in inventory:
@@ -1068,13 +1006,13 @@ ToughAsNailsU_flask_actions:
             - define flask <context.item>
             - define item <context.cursor_item>
             - if <[flask].inventory_contents.size> < 64:
-                - if <proc[ToughAsNailsU_is_flaskable].context[<[item]>]>:
-                    - run ToughAsNailsU_flask_put_in def:<player>|<[flask]>|<[item]>|<context.slot>|false
-                    #- flag <[item]> ToughAsNailsU_flaskable:!
-                    #- define result:<proc[toughasnailsu_flask_put_in].context[<[flask]>|<[item]>]>
-                    #- inventory set o:<[result].get[flask]> slot:<context.slot>
-                    #- adjust <player> item_on_cursor:<[result].get[item]>
-                    #- give toughasnailsu_drinking_glass_bottle quantity:<[result].get[amount]>
+                - if <[item].proc[ToughAsNailsU_is_flaskable]>:
+                    - define result <[flask].proc[toughasnailsu_flask_put_in].context[<[item]>]>
+                    - adjust <player> item_on_cursor:<[result].get[item]>
+                    - inventory set o:<[result].get[flask]> slot:<context.slot>
+                    - give toughasnailsu_drinking_glass_bottle quantity:<[result].get[amount]>
+                    - if <[result].get[flask].inventory_contents.size> == 64:
+                        - run toughasnailsu_advancement_flask_full
 
 #-------------------------------
 ToughAsNailsU_recipes_gui:
@@ -1155,26 +1093,3 @@ ToughAsNailsU_debug_command:
             - sidebar remove players:<server.online_players>
         - else:
             - flag server ToughAsNailsU.debug:true
-
-#ToughAsNailsU_tests_command:
-#    type: command
-#    name: test
-#    description: test
-#    usage: /test
-#    permission: ToughAsNailsU.admin
-#    script:
-#        - run ToughAsNailsU_recipe_generator def:<player>
-
-#tests_command:
-#    type: command
-#    name: test
-#    description: test
-#    usage: /test
-#    script:
-#        - define item:<item[toughasnailsu_green_glow_berry_tea_bottle]>
-#        - adjust def:item material:feather
-#        - adjust def:item lore:<&font[abc]>123
-#        - define item2:<[item]>
-#        - define bundle:<item[toughasnailsu_flask]>
-#        - adjust def:bundle inventory_contents:<list[<[item2]>]>
-#        - give <[bundle]>

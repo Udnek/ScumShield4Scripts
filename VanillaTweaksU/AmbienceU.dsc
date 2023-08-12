@@ -13,7 +13,7 @@ AmbienceU_show_fog:
             - foreach <server.online_players> as:__player:
                 #- narrate <player.name>
                 - if <player.location.world.name> == world:
-                    - if ( <player.location.biome.temperature> > 0.15 ) && ( <player.location.biome.temperature> < 0.7 ):
+                    - if <player.location.downfall_type> == RAIN:
                         - if !<player.has_flag[AmbienceU_has_fog]>:
                             - flag <player> AmbienceU_has_fog expire:2s
                             - bossbar auto AmbienceU_fog players:<server.bossbar_viewers[AmbienceU_fog].if_null[<list>].include[<player>]> options:CREATE_FOG
@@ -33,7 +33,7 @@ AmbienceU_show_fog:
         - if <server.current_bossbars.contains[AmbienceU_fog]>:
             - bossbar remove AmbienceU_fog
 
-
+# TODO DO NOT WORK
 AmbienceU_show_wind:
     type: task
     debug: false
@@ -59,12 +59,9 @@ AmbienceU_show_wind:
         - narrate stopped
 
 #-----------------------------------------
-
 AmbienceU_actions:
     type: world
     debug: false
     events:
         after weather clears in world:
-            #- flag server AmbienceU_fog_after_rain expire:<util.random.int[3].to[10]>s
-            #- flag server AmbienceU_fog_after_raiwn expire:<util.random.int[3].to[10]>s
             - run AmbienceU_show_fog def:<duration[<util.random.int[45].to[180]>s]>

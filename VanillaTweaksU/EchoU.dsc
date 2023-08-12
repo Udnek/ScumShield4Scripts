@@ -38,7 +38,7 @@ EchoU_axe:
     debug: false
     type: item
     material: wooden_axe
-    display name: <reset><&translate[echou.item.axe]>
+    display name: <reset><&translate[item.echou.axe]>
     mechanisms:
         custom_model_data: 1000
     recipes:
@@ -58,7 +58,7 @@ EchoU_spyglass:
     debug: false
     type: item
     material: spyglass
-    display name: <reset><&translate[echou.item.spyglass]>
+    display name: <reset><&translate[item.echou.spyglass]>
     mechanisms:
         custom_model_data: 1000
         hides: ENCHANTS
@@ -75,12 +75,12 @@ EchoU_spyglass:
     enchantments:
         - binding_curse:1
 
-
+# TODO DO NOT WORK
 EchoU_flint_and_steel:
     debug: false
     type: item
     material: flint_and_steel
-    display name: <reset><&translate[echou.item.flint_and_steel]>
+    display name: <reset><&translate[item.echou.flint_and_steel]>
     mechanisms:
         custom_model_data: 1000
     #recipes:
@@ -100,7 +100,7 @@ EchoU_shield:
     debug: false
     type: item
     material: shield
-    display name: <reset><&translate[echou.item.shield]>
+    display name: <reset><&translate[item.echou.shield]>
     mechanisms:
         custom_model_data: 1000
     recipes:
@@ -117,7 +117,7 @@ EchoU_fishing_rod:
     debug: false
     type: item
     material: fishing_rod
-    display name: <reset><&translate[echou.item.fishing_rod]>
+    display name: <reset><&translate[item.echou.fishing_rod]>
     mechanisms:
         custom_model_data: 1000
     recipes:
@@ -134,7 +134,7 @@ EchoU_elytra:
     debug: false
     type: item
     material: elytra
-    display name: <reset><&translate[echou.item.elytra]>
+    display name: <reset><&translate[item.echou.elytra]>
     mechanisms:
         custom_model_data: 1000
     recipes:
@@ -151,7 +151,7 @@ EchoU_compass:
     debug: false
     type: item
     material: compass
-    display name: <reset><&translate[echou.item.compass]>
+    display name: <reset><&translate[item.echou.compass]>
     mechanisms:
         custom_model_data: 1000
         lodestone_tracked: false
@@ -377,9 +377,9 @@ EchoU_compass_actions:
             - inventory flag slot:<[slot]> find_target:<context.entity>
 
             - if <context.entity.name> == <context.entity.entity_type>:
-                - define lore <gray><&translate[echou.compass_lore.no_name].with[<&translate[entity.minecraft.<context.entity.entity_type.to_lowercase>]>]>
+                - define lore <gray><&translate[lore.echou.compass.no_name].with[<&translate[entity.minecraft.<context.entity.entity_type.to_lowercase>]>]>
             - else:
-                - define lore <gray><&translate[echou.compass_lore.name].with[<&translate[entity.minecraft.<context.entity.entity_type.to_lowercase>]>|<context.entity.name>]>
+                - define lore <gray><&translate[lore.echou.compass.name].with[<&translate[entity.minecraft.<context.entity.entity_type.to_lowercase>]>|<context.entity.name>]>
 
             - inventory adjust slot:<[slot]> lore:<[lore]>
 
@@ -502,7 +502,7 @@ EchoU_axe_break_next_block:
 EchoU_recipes_gui:
     type: inventory
     inventory: CHEST
-    title: <&translate[echou.items_gui.title]>
+    title: <&translate[gui.echou.title]>
     size: 9
     gui: true
     definitions:
@@ -520,8 +520,7 @@ EchoU_recipes_gui_actions:
     debug: false
     events:
         after player clicks item in EchoU_recipes_gui:
-            - if ( <context.item.material.name> != air ) && ( <context.item.recipe_ids.size> > 0 ):
-                - run EnoughItemsU_open_recipe_gui def:<player>|<context.item>|1|false|EchoU_recipes_gui
+            - run EnoughItemsU_open_new_recipe_gui def:<context.item>
 
 EchoU_commands:
     type: command

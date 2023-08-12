@@ -4,27 +4,20 @@ TabU_update:
     definitions: __player
     script:
         - define "header:<&nl><bold>Scam<gold><bold>Shield<&nl><white><&m>               "
-        - define "footer:<gold><&m>               <&nl><white>Ping: <player.ping> TPS: <server.recent_tps.get[3].round><&nl><&nl><gray><util.ram_usage.div[1024].div[1024].round> / <util.ram_max.div[1024].div[1024]> MiB"
+        - define "footer:<gold><&m>               <&nl><white>Ping: <player.ping><&nl><&nl><white>TPS:<server.recent_tps.get[3].round> MSPT:<paper.tick_times.first.in_milliseconds.round_to[3]><&nl><&nl><gray><util.ram_usage.div[1024].div[1024].round> / <static[<util.ram_max.div[1024].div[1024]>]> MiB"
         - adjust <player> tab_list_info:<[header]>|<[footer]>
-
-TabU_auto_update:
-    type: task
-    debug: false
-    script:
-        - while true:
-            - foreach <server.online_players> as:p:
-                - run tabu_update def:<[p]>
-            - wait 1s
-            #- if <server.online_players.size> != 0:
-            #    - run tabu_update def:<server.online_players>
-            #- wait 2s
 
 TabU_actions:
     type: world
     debug: false
     events:
-        after server start:
-            - run TabU_auto_update
+        after delta time secondly:
+            - foreach <server.online_players> as:p:
+                - run tabu_update def:<[p]>
+
+
+        #after server start:
+        #    - run TabU_auto_update
 
         on player joins:
             - if <player.name> == herobrine:

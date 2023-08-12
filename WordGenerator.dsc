@@ -1,3 +1,5 @@
+# TODO DO NOT WORK
+
 WordGenerator_new_world_command:
     type: command
     name: new_world

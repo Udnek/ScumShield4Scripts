@@ -14,8 +14,51 @@ EnoughItemsU_recipe_replace_data:
     denizen:toughasnailsu_special_bone_meal_1:
         firework_star: ToughAsNailsU_oak_leaf
 
-#-----------------------------------
+EnoughItemsU_recipe_add_data:
+    type: data
 
+    enchanting_table:
+        - denizen:enchantingtablefixu_enchanting_table
+
+#-----------------------------------
+EnoughItemsU_get_all_craftable_items:
+    type: procedure
+    debug: false
+    script:
+        - define vanilla <server.material_types.filter[is_item].exclude[<material[air]>].parse[name]>
+        - define custom <util.scripts.filter[container_type.equals[ITEM]].parse[name]>
+        - define result <list[]>
+        - foreach <[vanilla].include[<[custom]>]> as:item_name:
+            - if <item[<[item_name]>].proc[enoughitemsu_all_recipe_ids].size> > 0:
+                - define result:->:<[item_name]>
+        - determine <[result]>
+
+
+#TODO DO NOT WORK
+EnoughItemsU_get_translated_names:
+    type: procedure
+    debug: false
+    definitions: item_names_list
+    script:
+        - define result <list[]>
+        - foreach <[item_names_list]> as:item_name:
+            - define item <item[<[item_name]>]>
+            - if <[item].has_display>:
+                - define result:->:<[item].display>
+            - else:
+                - define result:->:<[item].material.translated_name>
+        - determine <[result]>
+
+
+EnoughItemsU_all_recipe_ids:
+    type: procedure
+    debug: false
+    definitions: item
+    script:
+        - define recipe_ids <[item].recipe_ids>
+        - define recipe_ids_added <script[EnoughItemsU_recipe_add_data].data_key[<[item].script.name.if_null[<[item].material.name>]>].if_null[<list[]>]>
+        - determine <[recipe_ids].include[<[recipe_ids_added]>]>
+#-----------------------------------
 EnoughItemsU_empty_item:
     type: item
     material: gunpowder
@@ -33,27 +76,27 @@ EnoughItemsU_recipe_arrow_left:
     material: gunpowder
     mechanisms:
         custom_model_data: 1102
-    display name: <reset><&translate[enoughitemsu.arrow_left_active]>
+    display name: <reset><&translate[gui.enoughitemsu.arrow_left_active]>
 
 EnoughItemsU_recipe_arrow_right:
     type: item
     material: gunpowder
     mechanisms:
         custom_model_data: 1101
-    display name: <reset><&translate[enoughitemsu.arrow_right_active]>
+    display name: <reset><&translate[gui.enoughitemsu.arrow_right_active]>
 
 EnoughItemsU_recipe_back:
     type: item
     material: gunpowder
     mechanisms:
         custom_model_data: 1103
-    display name: <reset><&translate[enoughitemsu.back]>
+    display name: <reset><&translate[gui.enoughitemsu.back]>
 
 EnoughItemsU_recipe_gui:
     type: inventory
     inventory: CHEST
     #title: 1
-    title: <&translate[space.-8]><white><&font[enoughitemsu]><&translate[enoughitemsu.gui_backround]><&translate[space.-171]><black><&translate[enoughitemsu.title]>
+    title: <&translate[space.-8]><white><&font[enoughitemsu:font]><&translate[gui.enoughitemsu.backround]><&translate[space.-171]><black><&translate[gui.enoughitemsu.title]>
     size: 54
     gui: true
     slots:
@@ -65,16 +108,24 @@ EnoughItemsU_recipe_gui:
     - [] [] [] [] [] [] [] [] []
 
 #-------------------------------
+EnoughItemsU_open_new_recipe_gui:
+    type: task
+    debug: false
+    definitions: item
+    script:
+        - if ( <[item].material.name> != air ) && ( <[item].proc[enoughitemsu_all_recipe_ids].size> > 0 ):
+            - run EnoughItemsU_open_recipe_gui def:<player>|<[item]>|1|false|false
+
 EnoughItemsU_open_recipe_gui:
     type: task
     debug: false
     definitions: __player|item|recipe_number|back_item|back_inventory
     script:
-        - define genertor_result:<proc[EnoughItemsU_recipe_generator].context[<[item]>|<[recipe_number]>]>
-        - define recipe:<[genertor_result].get[gui]>
-        - define gui:<inventory[EnoughItemsU_recipe_gui]>
-        - define offset_x:2
-        - define offset_y:2
+        - define genertor_result <proc[EnoughItemsU_recipe_generator].context[<[item]>|<[recipe_number]>]>
+        - define recipe <[genertor_result].get[gui]>
+        - define gui <inventory[EnoughItemsU_recipe_gui]>
+        - define offset_x 2
+        - define offset_y 2
 
 
         - repeat 3 from:0 as:y:
@@ -86,23 +137,23 @@ EnoughItemsU_open_recipe_gui:
         - inventory set o:<[genertor_result].get[gui_icon]> slot:13 destination:<[gui]>
 
         - if <[back_item]> != false:
-            - define back:<item[enoughitemsu_recipe_back]>
+            - define back <item[enoughitemsu_recipe_back]>
             - flag <[back]> item:<[back_item].script.name.if_null[<[back_item].material.name>]>
             - inventory set o:<[back]> slot:1 destination:<[gui]>
 
         - else if <[back_inventory]> != false:
-            - define back:<item[enoughitemsu_recipe_back]>
+            - define back <item[enoughitemsu_recipe_back]>
             - flag <[back]> inventory:<[back_inventory]>
             - inventory set o:<[back]> slot:1 destination:<[gui]>
 
         - if <[genertor_result].get[recipes_amount]> > <[recipe_number]>:
-            - define arrow_right:<item[EnoughItemsU_recipe_arrow_right]>
+            - define arrow_right <item[EnoughItemsU_recipe_arrow_right]>
             - flag <[arrow_right]> recipe_number:<[recipe_number].add[1]>
             #- adjust def:arrow_right display:<[recipe_number].add[1]>
             - inventory set o:<[arrow_right]> slot:36 destination:<[gui]>
 
         - if <[recipe_number]> > 1:
-            - define arrow_left:<item[EnoughItemsU_recipe_arrow_left]>
+            - define arrow_left <item[EnoughItemsU_recipe_arrow_left]>
             - flag <[arrow_left]> recipe_number:<[recipe_number].add[-1]>
             #- adjust def:arrow_left display:<[recipe_number].add[-1]>
             - inventory set o:<[arrow_left]> slot:28 destination:<[gui]>
@@ -115,101 +166,104 @@ EnoughItemsU_recipe_generator:
     debug: false
     definitions: item_result|recipe_number
     script:
-        - define gui:<item[air].repeat_as_list[9]>
-        - define recipe_ids:<[item_result].recipe_ids>
-        - define recipe_id:<[recipe_ids].get[<[recipe_number]>]>
-        - define recipe_type:<server.recipe_type[<[recipe_id]>]>
-        - define gui_icon:<item[EnoughItemsU_empty_item]>
+        - define gui <item[air].repeat_as_list[9]>
+        - define recipe_ids <[item_result].proc[enoughitemsu_all_recipe_ids]>
+        #- define recipe_ids <[item_result].recipe_ids>
+        #- define recipe_ids_added <script[EnoughItemsU_recipe_add_data].data_key[<[item_result].script.name.if_null[<[item_result].material>]>]>
+        #- if <[recipe_ids_added]> != null:
+        #    - define recipe_ids:->:recipe_ids_added
+        #- define recipe_ids <[item_result].recipe_ids>
+        - define recipe_id <[recipe_ids].get[<[recipe_number]>]>
+        - define recipe_type <server.recipe_type[<[recipe_id]>]>
+        - define gui_icon <item[EnoughItemsU_empty_item]>
         - choose <[recipe_type]>:
             - case SHAPED:
-                - define recipe:<server.recipe_items[<[recipe_id]>]>
-                - define shape:<server.recipe_shape[<[recipe_id]>].replace_text[x].with[].to_list>
-                - define offset_y:0
-                - define offset_x:0
+                - define recipe <server.recipe_items[<[recipe_id]>]>
+                - define shape <server.recipe_shape[<[recipe_id]>].replace_text[x].with[].to_list>
+                - define offset_y 0
+                - define offset_x 0
                 - if <[shape].get[2]> == 1:
-                    - define offset_y:1
+                    - define offset_y 1
                 - else if <[shape].get[1]> == 1:
-                    - define offset_x:1
-                - define n:1
+                    - define offset_x 1
+                - define n 1
                 - repeat <[shape].get[2]> from:0 as:y:
                     - repeat <[shape].get[1]> from:1 as:x:
                         - define item:<[recipe].get[<[n]>]>
                         - if <[item].contains[material:]>:
-                            - define item:<item[<[item].replace_text[material:].with[]>]>
+                            - define item <item[<[item].replace_text[material:].with[]>]>
                         - define gui[<[y].add[<[offset_y]>].mul[3].add[<[x]>].add[<[offset_x]>]>]:<[item]>
                         - define n:+:1
-                - define block_icon:<item[crafting_table]>
+                - define block_icon <item[crafting_table]>
                 - adjust def:gui_icon custom_model_data:1000
 
             - case SHAPELESS:
-                - define recipe:<server.recipe_items[<[recipe_id]>]>
-                - define size:<[recipe].size>
-                - define y:0
-                - define x:1
+                - define recipe <server.recipe_items[<[recipe_id]>]>
+                - define size <[recipe].size>
+                - define y 0
+                - define x 1
                 - repeat <[size]> as:n:
-                    - define item:<[recipe].get[<[n]>]>
+                    - define item <[recipe].get[<[n]>]>
                     - if <[item].contains[material:]>:
-                        - define item:<item[<[item].replace_text[material:].with[]>]>
+                        - define item <item[<[item].replace_text[material:].with[]>]>
                     - define gui[<[y].mul[3].add[<[x]>]>]:<[item]>
                     - define x:+:1
                     - if <[x]> == 4:
                         - define y:+:1
-                        - define x:1
-                - define block_icon:<item[crafting_table]>
+                        - define x 1
+                - define block_icon <item[crafting_table]>
                 - adjust def:gui_icon custom_model_data:1000
 
             - case FURNACE SMOKING BLASTING CAMPFIRE:
-                - define recipe:<server.recipe_items[<[recipe_id]>]>
-                - define item:<[recipe].get[1].if_null[<item[air]>]>
+                - define recipe <server.recipe_items[<[recipe_id]>]>
+                - define item <[recipe].get[1].if_null[<item[air]>]>
                 - if <[item].contains[material:]>:
-                    - define item:<item[<[item].replace_text[material:].with[]>]>
+                    - define item <item[<[item].replace_text[material:].with[]>]>
                 - define gui[2]:<[item]>
 
-                #- define fire_icon:<item[EnoughItemsU_empty_item]>
-                #- adjust def:fire_icon custom_model_data:1100
                 - define gui[5]:<item[EnoughItemsU_fire_icon]>
 
                 - adjust def:gui_icon custom_model_data:1001
                 - choose <[recipe_type]>:
                     - case FURNACE:
-                        - define block_icon:<item[furnace]>
+                        - define block_icon <item[furnace]>
                     - case SMOKING:
-                        - define block_icon:<item[smoker]>
+                        - define block_icon <item[smoker]>
                     - case BLASTING:
-                        - define block_icon:<item[blast_furnace]>
+                        - define block_icon <item[blast_furnace]>
                     - case CAMPFIRE:
-                        - define block_icon:<item[campfire]>
+                        - define block_icon <item[campfire]>
 
             - case SMITHING:
-                - define recipe:<server.recipe_items[<[recipe_id]>]>
+                - define recipe <server.recipe_items[<[recipe_id]>]>
 
-                - define item_1:<[recipe].get[1].if_null[<item[air]>]>
-                - define item_2:<[recipe].get[2].if_null[<item[air]>]>
+                - define item_1 <[recipe].get[1].if_null[<item[air]>]>
+                - define item_2 <[recipe].get[2].if_null[<item[air]>]>
                 - if <[item_1].contains[material:]>:
-                    - define item_1:<item[<[item_1].replace_text[material:].with[]>]>
+                    - define item_1 <item[<[item_1].replace_text[material:].with[]>]>
                 - if <[item_2].contains[material:]>:
-                    - define item_2:<item[<[item_2].replace_text[material:].with[]>]>
+                    - define item_2 <item[<[item_2].replace_text[material:].with[]>]>
                 - define gui[4]:<[item_1]>
                 - define gui[6]:<[item_2]>
                 - adjust def:gui_icon custom_model_data:1002
-                - define block_icon:<item[smithing_table]>
+                - define block_icon <item[smithing_table]>
 
             - case STONECUTTING:
-                - define recipe:<server.recipe_items[<[recipe_id]>]>
-                - define item:<[recipe].get[1].if_null[<item[air]>]>
+                - define recipe <server.recipe_items[<[recipe_id]>]>
+                - define item <[recipe].get[1].if_null[<item[air]>]>
                 - if <[item].contains[material:]>:
-                    - define item:<item[<[item].replace_text[material:].with[]>]>
+                    - define item <item[<[item].replace_text[material:].with[]>]>
                 - define gui[5]:<[item]>
 
                 #- define fire_icon:<item[EnoughItemsU_empty_item]>
                 #- adjust def:fire_icon custom_model_data:1100
                 #- define gui[5]:<item[EnoughItemsU_fire_icon]>
-                - define block_icon:<item[stonecutter]>
+                - define block_icon <item[stonecutter]>
 
                 - adjust def:gui_icon custom_model_data:1003
 
             - default:
-                - define block_icon:<item[air]>
+                - define block_icon <item[air]>
 
         - define replace_recipe_data <script[enoughitemsu_recipe_replace_data]>
         - define replace_recipe_items <[replace_recipe_data].data_key[<[recipe_id]>].if_null[null]>
@@ -275,13 +329,17 @@ EnoughItemsU_gui_actions:
 #-------------------------------
 EnoughItemsU_recipe_command:
     type: command
+    debug: false
     name: recipe
     description: recipe
     usage: /recipe
-    debug: false
-    #permission: ToughAsNailsU.admin
+    tab completions:
+        1: <static[<proc[enoughitemsu_get_all_craftable_items]>]>
     script:
-        - define item <item[<player.item_in_hand.script.name.if_null[<player.item_in_hand.material.name>]>]>
-        - if ( <[item].material.name> != air ) && ( <[item].recipe_ids.size> > 0 ):
-            - run EnoughItemsU_open_recipe_gui def:<player>|<[item]>|1|false|false
+        - if <context.args.first.if_null[null]> != null:
+            - if <item[<context.args.first>].if_null[null]> != null:
+                - run EnoughItemsU_open_new_recipe_gui def:<item[<context.args.first>]>
+                - stop
+        - run EnoughItemsU_open_new_recipe_gui def:<player.item_in_hand>
+
 

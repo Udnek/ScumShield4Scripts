@@ -3,13 +3,42 @@ ToughAsNailsU_trees_actions:
     debug: false
     events:
         on structure grows from bonemeal:
-            - if <player.item_in_hand.script.name.if_null[null]> == ToughAsNailsU_special_bone_meal:
+            - define bone_meal <player.item_in_hand>
+            - if <[bone_meal].material.name> != bone_meal:
+                - define bone_meal <player.item_in_offhand>
+
+            - if <[bone_meal].script.name.if_null[null]> == ToughAsNailsU_special_bone_meal:
+                - determine cancelled passively
+
+                - define sapling_from_leaf <proc[ToughAsNailsU_from_leaf_to_sapling].context[<[bone_meal].flag[toughasnailsu_leaf]>]>
                 - define biome <player.item_in_hand.flag[toughasnailsu_biome]>
+                - define origin_sapling <context.location.material.name>
+
+                #- narrate <[origin_sapling]>
+                #- narrate <[sapling_from_leaf]>
+
+                - if <[origin_sapling]> not matches <[sapling_from_leaf]>:
+                    - define leaves <proc[ToughAsNailsU_from_sapling_to_leaves].context[<[sapling_from_leaf].first>]>
+                    - define materials <list[]>
+
+                    #- narrate "sfl: <[sapling_from_leaf].first>"
+                    #- narrate "leaves: <[leaves]>"
+
+                    - foreach <context.new_materials> as:mat:
+                        - if <[mat].name.advanced_matches[*leaves]>:
+                            - define materials:->:<material[<[leaves].random>]>
+                            - foreach next
+                        - define materials:->:<[mat]>
+
+                    - modifyblock <context.blocks> <[materials]>
+
+                    - run toughasnailsu_advancement_custom_tree
+                    - stop
+
+
                 - define data <script[toughasnailsu_trees_data].data_key[biomes]>
                 - if !<[data].contains[<[biome]>]>:
                     - stop
-
-                - determine cancelled passively
 
                 - define name <[data].get[<[biome]>].random>
                 - define sapling <context.location.material>
@@ -22,15 +51,29 @@ ToughAsNailsU_trees_actions:
                 - if <context.location.material.name> == air:
                     - modifyblock <[sapling]> <context.location>
 
+                - run toughasnailsu_advancement_custom_tree
+
             #- announce <green><player.name.if_null[null]>
 #
             ##- define name terralith:mountains/misty/trees_base
             #- define data <script[toughasnailsu_trees_data].data_key[biomes]>
             #- define name <[data].get[<[data].keys.random>].random>
             ##- define name terralith:taiga/siberian/trees_new_orange
-#
 
 
+ToughAsNailsU_from_leaf_to_sapling:
+    type: procedure
+    debug: false
+    definitions: leaf_script_name
+    script:
+        - determine <list[<script[ToughAsNailsU_leaf_to_sapling_data].data_key[leaf.<[leaf_script_name]>]>]>
+
+ToughAsNailsU_from_sapling_to_leaves:
+    type: procedure
+    debug: false
+    definitions: sapling_name
+    script:
+        - determine <list[<script[ToughAsNailsU_sapling_to_leaves_data].data_key[sapling.<[sapling_name]>]>]>
 
 
 ToughAsNailsU_bone_meal_command:
@@ -44,6 +87,40 @@ ToughAsNailsU_bone_meal_command:
     script:
         - define item <item[toughasnailsu_special_bone_meal]>
         - give <[item].with[flag=toughasnailsu_biome:<context.args.first>]>
+
+
+ToughAsNailsU_leaf_to_sapling_data:
+    type: data
+    leaf:
+        ToughAsNailsU_acacia_leaf: acacia_sapling
+        ToughAsNailsU_azalea_leaf:
+            - azalea
+            - flowering_azalea
+        ToughAsNailsU_birch_leaf: birch_sapling
+        ToughAsNailsU_cherry_leaf: cherry_sapling
+        ToughAsNailsU_dark_oak_leaf: dark_oak_sapling
+        ToughAsNailsU_jungle_leaf: jungle_sapling
+        ToughAsNailsU_mangrove_leaf: mangrove_propagule
+        ToughAsNailsU_oak_leaf: oak_sapling
+        ToughAsNailsU_spruce_leaf: spruce_sapling
+
+ToughAsNailsU_sapling_to_leaves_data:
+    type: data
+    sapling:
+        acacia_sapling: acacia_leaves
+        azalea:
+            - azalea_leaves
+            - flowering_azalea_leaves
+        flowering_azalea:
+            - azalea_leaves
+            - flowering_azalea_leaves
+        birch_sapling: birch_leaves
+        cherry_sapling: cherry_leaves
+        dark_oak_sapling: dark_oak_leaves
+        jungle_sapling: jungle_leaves
+        mangrove_propagule: mangrove_leaves
+        oak_sapling: oak_leaves
+        spruce_sapling: spruce_leaves
 
 #----------------------
 ToughAsNailsU_trees_data:
@@ -188,16 +265,16 @@ ToughAsNailsU_trees_data:
             - terralith:shrubland/cold/cone_trees
 
         terralith:sakura_grove:
-            - terralith:cherry/birch
-            - terralith:cherry/birch_sparse
-            - terralith:cherry/cherry_trees
-            - terralith:cherry/cherry_trees_light
+            - terralith:sakura/birch
+            - terralith:sakura/birch_sparse
+            - terralith:sakura/cherry_trees
+            - terralith:sakura/cherry_trees_light
 
         terralith:sakura_valley:
-            - terralith:cherry/birch
-            - terralith:cherry/birch_sparse
-            - terralith:cherry/cherry_trees
-            - terralith:cherry/cherry_trees_light
+            - terralith:sakura/birch
+            - terralith:sakura/birch_sparse
+            - terralith:sakura/cherry_trees
+            - terralith:sakura/cherry_trees_light
 
         terralith:sandstone_valley:
             - terralith:canyon/sandstone/scattered_palms
@@ -235,7 +312,7 @@ ToughAsNailsU_trees_data:
             - terralith:skylands/trees
 
         terralith:skylands_spring:
-            - terralith:cherry/birch_sparse
+            - terralith:sakura/birch_sparse
             - terralith:skylands/spring/trees
 
         terralith:skylands_summer:
@@ -243,6 +320,9 @@ ToughAsNailsU_trees_data:
 
         terralith:skylands_winter:
             - terralith:skylands/winter/trees
+
+        terralith:snowy_cherry_grove:
+            - minecraft:trees_cherry
 
         terralith:snowy_maple_forest:
             - terralith:highlands/forest/trees_maple_cold
