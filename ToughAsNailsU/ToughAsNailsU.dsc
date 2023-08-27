@@ -300,19 +300,13 @@ ToughAsNailsU_food_effect_lore:
     definitions: item_name
     script:
         - define stats <list[<script[toughasnailsu_items_data].data_key[stats.<[item_name]>]>]>
-        - define duration <duration[<[stats].get[3]>]>
-        - define minutes <[duration].in_minutes.round_down>
-        - define seconds <[duration].in_seconds.sub[<[minutes].mul[60]>]>
+        - define duration <duration[<[stats].get[3]>].proc[utilsu_lore_duration]>
         - define buff <[stats].get[2]>
-        - if <[minutes].length> == 1:
-            - define minutes 0<[minutes]>
-        - if <[seconds].length> == 1:
-            - define seconds 0<[seconds]>
 
         - if <[buff]> > 0:
-            - determine <reset><&translate[lore.toughasnailsu.effect_heat].with[<&color[#FFAA00]><[stats].get[2]>|<&color[#FFAA00]><[minutes]>:<[seconds]>]>
+            - determine <&color[#FFAA00]><&translate[lore.toughasnailsu.effect_heat].with[<[stats].get[2]>|<[duration]>]>
         - else:
-            - determine <reset><&translate[lore.toughasnailsu.effect_freeze].with[<&color[#55FFFF]><[stats].get[2]>|<&color[#55FFFF]><[minutes]>:<[seconds]>]>
+            - determine <&color[#55FFFF]><&translate[lore.toughasnailsu.effect_freeze].with[<[stats].get[2]>|<[duration]>]>
 
 ToughAsNailsU_food_thirst_lore:
     type: procedure
@@ -685,6 +679,8 @@ ToughAsNailsU_actions:
                     - run ToughAsNailsU_adjust_thirst def:-1
 
         after player consumes potion:
+            - if <context.item.proc[utilsu_item_actual_name]> == FoodifyU_soup:
+                - stop
             - run ToughAsNailsU_adjust_thirst def:3
             - if <context.item.effects_data.get[1].get[type]> matches WATER|MUNDANE|THICK:
                 - if <util.random_chance[80]>:
@@ -722,22 +718,22 @@ ToughAsNailsU_actions:
                 - give ToughAsNailsU_drinking_glass_bottle
 
         after player clicks block with:ToughAsNailsU_drinking_glass_bottle:
-            - define location:<player.eye_location.ray_trace[range=3.5;fluids=true;entities=*;ignore=<player>]||null>
+            - define location <player.eye_location.ray_trace[range=3.5;fluids=true;entities=*;ignore=<player>]||null>
             - if <[location]> == null:
                 - stop
-            - define item:<proc[toughasnailsu_water_type].context[<[location]>]>
+            - define item <proc[toughasnailsu_water_type].context[<[location]>]>
             - if <[item]> == null:
                 - stop
             - take slot:<player.held_item_slot> quantity:1
             - give <[item]>
 
         on dispenser dispenses ToughAsNailsU_drinking_glass_bottle:
-            - define item:<proc[toughasnailsu_water_type].context[<context.location.with_facing_direction.forward[1]>]>
+            - define item <proc[toughasnailsu_water_type].context[<context.location.with_facing_direction.forward[1]>]>
             - if <[item]> != null:
                 - determine cancelled
 
         after dispenser dispenses ToughAsNailsU_drinking_glass_bottle cancelled:true:
-            - define item:<proc[toughasnailsu_water_type].context[<context.location.with_facing_direction.forward[1]>]>
+            - define item <proc[toughasnailsu_water_type].context[<context.location.with_facing_direction.forward[1]>]>
             - if <[item]> != null:
                 - take item:toughasnailsu_drinking_glass_bottle from:<context.location.inventory> quantity:1
                 - drop <[item]> <context.location.center.with_facing_direction.forward[0.6]> delay:0 save:bottle
@@ -748,8 +744,8 @@ ToughAsNailsU_actions:
                 - drop <proc[toughasnailsu_leaf_type].context[<context.location>|<context.material.name>]> <context.location> quantity:1
                 #- drop ToughAsNailsU_leaf <context.location> quantity:
         after player breaks *leaves:
-            #- if <context.material.persistent>:
-            #    - stop
+            - if <context.material.persistent>:
+                - stop
             #- narrate <player.item_in_hand.enchantment_map.get[fortune].if_null[0].add[1].mul[7]>
             - if <util.random_chance[<player.item_in_hand.enchantment_map.get[fortune].if_null[0].add[1].mul[7]>]>:
                 - drop <proc[toughasnailsu_leaf_type].context[<context.location>|<context.material.name>]> <context.location> quantity:1
@@ -791,7 +787,7 @@ ToughAsNailsU_crafting_actions:
 
 
         on firework_rocket recipe formed:
-            - if <context.inventory.contains_item[ToughAsNailsU_*_leaf]>:
+            - if <context.inventory.quantity_item[ToughAsNailsU_*_leaf]> != 0:
                 - determine cancelled
 
         on ToughAsNailsU_* recipe formed:
@@ -800,25 +796,40 @@ ToughAsNailsU_crafting_actions:
                     - determine cancelled
 
         on player crafts ToughAsNailsU_*:
-            - if <proc[ToughAsNailsU_is_fixed_bottle].context[<context.item>]>:
-                - define pos:<context.inventory.find_item[glass_bottle]>
-                - if <[pos]> == -1:
-                    - define amount <context.amount>
-                    - wait 1t
-                    - take item:glass_bottle from:<player.inventory> quantity:<[amount]>
-                    - define pos <context.inventory.find_item[glass_bottle]>
+            - define bottle_before <player.inventory.quantity_item[glass_bottle]>
+            - wait 1t
+            - define bottle_after <player.inventory.quantity_item[glass_bottle]>
+            - take from:<context.inventory> item:glass_bottle quantity:1
+            - take item:glass_bottle quantity:<[bottle_after].sub[<[bottle_before]>]>
+        #    - narrate <context.amount>
+        #    - if <context.item.proc[ToughAsNailsU_is_fixed_bottle]>:
+        #        - narrate <context.amount>
+        #        - wait 1t
+        #        - narrate <context.amount>
+                #- narrate <context.amount>
+                #- take item:glass_bottle quantity:<context.amount>
+                #- narrate <context.amount>
+                #- define pos:<context.inventory.find_item[glass_bottle]>
+                #- if <[pos]> == -1:
+                #    - define amount <context.amount>
+                #    - wait 1t
+                #    - take item:glass_bottle from:<player.inventory> quantity:<[amount]>
+                #    - define pos <context.inventory.find_item[glass_bottle]>
 
-        after player crafts ToughAsNailsU_*:
-            - if <proc[ToughAsNailsU_is_fixed_bottle].context[<context.item>]>:
-                - define pos <context.inventory.find_item[glass_bottle]>
-                - if <[pos]> != -1:
-                    - inventory set d:<context.inventory> o:air slot:<[pos]>
+        #after player crafts ToughAsNailsU_*:
+        #    - narrate <context.amount>
+        #    - if <context.item.proc[ToughAsNailsU_is_fixed_bottle]>:
+        #        - narrate <context.amount>
+                #- take item:glass_bottle
+                #- define pos <context.inventory.find_item[glass_bottle]>
+                #- narrate <[pos]>
+                #- if <[pos]> != -1:
+                #    - inventory set d:<context.inventory> o:air slot:<[pos]>
 
         on item despawns:
             - if <context.item.has_flag[ToughAsNailsU_to_beer]>:
                 - if <context.entity.location.light> <= 5:
                     - define item <item[<context.item.flag[ToughAsNailsU_to_beer]>]>
-                    #- adjust def:item quantity:<context.entity.item.quantity>
                     - drop <[item]> <context.entity.location> speed:0 quantity:<context.entity.item.quantity>
                     - remove <context.entity>
                 - else:
@@ -827,40 +838,40 @@ ToughAsNailsU_crafting_actions:
                 - playeffect spit <context.entity.location> quantity:4 velocity:0,0.2,0
                 - playsound <context.entity.location> BLOCK_FIRE_EXTINGUISH volume:0.15
 
-        # TODO FIX IT
-        after cauldron level raises:
-            - announce <context.cause>
-            - define hopper <context.location.below>
-            - if <context.location.below.material.name> != hopper:
-                - stop
-            - if !<context.location.below.material.switched>:
-                - stop
-            #- announce hopper_ok
-
-            - if <context.cause> == NATURAL_FILL:
-                #- announce natural
-                - define output toughasnailsu_pure_water_bottle
-            - else:
-                #- announce dirty
-                - define output toughasnailsu_dirty_water_bottle
-
-            - repeat <context.new_level>:
-                - if !<[hopper].inventory.contains_item[ToughAsNailsU_drinking_glass_bottle]>:
-                    - stop
-                #- announce bottle_ok
-
-                - if !<[hopper].inventory.can_fit[<[output]>].quantity[1]>:
-                    - stop
-                #- announce availeble_slot
-
-                - if <context.location.material.level.sub[1]> == 0:
-                    - modifyblock <context.location> cauldron
-                - else:
-                    - adjustblock <context.location> level:<context.location.material.level.sub[1]>
-
-                - take item:ToughAsNailsU_drinking_glass_bottle quantity:1 from:<[hopper].inventory>
-                - give <[output]> quantity:1 to:<[hopper].inventory> ignore_leftovers
-                #- announce OK
+        ## TODO FIX IT
+        #after cauldron level raises:
+        #    - announce <context.cause>
+        #    - define hopper <context.location.below>
+        #    - if <context.location.below.material.name> != hopper:
+        #        - stop
+        #    - if !<context.location.below.material.switched>:
+        #        - stop
+        #    #- announce hopper_ok
+#
+        #    - if <context.cause> == NATURAL_FILL:
+        #        #- announce natural
+        #        - define output toughasnailsu_pure_water_bottle
+        #    - else:
+        #        #- announce dirty
+        #        - define output toughasnailsu_dirty_water_bottle
+#
+        #    - repeat <context.new_level>:
+        #        - if !<[hopper].inventory.contains_item[ToughAsNailsU_drinking_glass_bottle]>:
+        #            - stop
+        #        #- announce bottle_ok
+#
+        #        - if !<[hopper].inventory.can_fit[<[output]>].quantity[1]>:
+        #            - stop
+        #        #- announce availeble_slot
+#
+        #        - if <context.location.material.level.sub[1]> == 0:
+        #            - modifyblock <context.location> cauldron
+        #        - else:
+        #            - adjustblock <context.location> level:<context.location.material.level.sub[1]>
+#
+        #        - take item:ToughAsNailsU_drinking_glass_bottle quantity:1 from:<[hopper].inventory>
+        #        - give <[output]> quantity:1 to:<[hopper].inventory> ignore_leftovers
+        #        #- announce OK
 
 
 
@@ -992,12 +1003,12 @@ ToughAsNailsU_flask_actions:
             - define item <context.item>
             - if <[flask].inventory_contents.size> < 64:
                 - if <proc[ToughAsNailsU_is_flaskable].context[<[item]>]>:
-                    - define result <[flask].proc[toughasnailsu_flask_put_in_proc].context[<[item]>]>
+                    - define result <[flask].proc[toughasnailsu_flask_put_in].context[<[item]>]>
                     - adjust <player> item_on_cursor:<[result].get[flask]>
                     - inventory set o:<[result].get[item]> slot:<context.slot>
                     - give toughasnailsu_drinking_glass_bottle quantity:<[result].get[amount]>
                     - if <[result].get[flask].inventory_contents.size> == 64:
-                        - run toughasnailsu_advancement_flask_full
+                        - run toughasnailsu_advancement_flask_full def:<[result].get[flask]>
 
 
         on player right clicks ToughAsNailsU_flask in inventory:
@@ -1012,7 +1023,7 @@ ToughAsNailsU_flask_actions:
                     - inventory set o:<[result].get[flask]> slot:<context.slot>
                     - give toughasnailsu_drinking_glass_bottle quantity:<[result].get[amount]>
                     - if <[result].get[flask].inventory_contents.size> == 64:
-                        - run toughasnailsu_advancement_flask_full
+                        - run toughasnailsu_advancement_flask_full def:<[result].get[flask]>
 
 #-------------------------------
 ToughAsNailsU_recipes_gui:

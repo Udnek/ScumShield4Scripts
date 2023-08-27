@@ -61,11 +61,13 @@ EnoughItemsU_all_recipe_ids:
 #-----------------------------------
 EnoughItemsU_empty_item:
     type: item
+    debug: false
     material: gunpowder
     display name: " "
 
 EnoughItemsU_fire_icon:
     type: item
+    debug: false
     material: gunpowder
     mechanisms:
         custom_model_data: 1100
@@ -73,6 +75,7 @@ EnoughItemsU_fire_icon:
 
 EnoughItemsU_recipe_arrow_left:
     type: item
+    debug: false
     material: gunpowder
     mechanisms:
         custom_model_data: 1102
@@ -80,6 +83,7 @@ EnoughItemsU_recipe_arrow_left:
 
 EnoughItemsU_recipe_arrow_right:
     type: item
+    debug: false
     material: gunpowder
     mechanisms:
         custom_model_data: 1101
@@ -87,6 +91,7 @@ EnoughItemsU_recipe_arrow_right:
 
 EnoughItemsU_recipe_back:
     type: item
+    debug: false
     material: gunpowder
     mechanisms:
         custom_model_data: 1103

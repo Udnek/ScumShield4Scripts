@@ -3,8 +3,8 @@ TabU_update:
     debug: false
     definitions: __player
     script:
-        - define "header:<&nl><bold>Scam<gold><bold>Shield<&nl><white><&m>               "
-        - define "footer:<gold><&m>               <&nl><white>Ping: <player.ping><&nl><&nl><white>TPS:<server.recent_tps.get[3].round> MSPT:<paper.tick_times.first.in_milliseconds.round_to[3]><&nl><&nl><gray><util.ram_usage.div[1024].div[1024].round> / <static[<util.ram_max.div[1024].div[1024]>]> MiB"
+        - define header "<&nl><bold>Scam<gold><bold>Shield<&nl><white><&m>               "
+        - define footer "<gold><&m>               <&nl><white>Ping: <player.ping><&nl><&nl><white>TPS:<server.recent_tps.get[3].round> MSPT:<paper.tick_times.first.in_milliseconds.round_to[3]><&nl><&nl><gray><util.ram_usage.div[1024].div[1024].round> / <static[<util.ram_max.div[1024].div[1024]>]> MiB"
         - adjust <player> tab_list_info:<[header]>|<[footer]>
 
 TabU_actions:

@@ -2,17 +2,23 @@ ToughAsNailsU_trees_actions:
     type: world
     debug: false
     events:
+        on player right clicks *_sapling with:ToughAsNailsU_special_bone_meal:
+            - flag <context.location> ToughAsNailsU_sapling:<context.location.material.name> expire:1t
+
         on structure grows from bonemeal:
+
             - define bone_meal <player.item_in_hand>
             - if <[bone_meal].material.name> != bone_meal:
                 - define bone_meal <player.item_in_offhand>
 
-            - if <[bone_meal].script.name.if_null[null]> == ToughAsNailsU_special_bone_meal:
+            - if <[bone_meal].proc[utilsu_item_actual_name]> == ToughAsNailsU_special_bone_meal:
                 - determine cancelled passively
 
                 - define sapling_from_leaf <proc[ToughAsNailsU_from_leaf_to_sapling].context[<[bone_meal].flag[toughasnailsu_leaf]>]>
                 - define biome <player.item_in_hand.flag[toughasnailsu_biome]>
                 - define origin_sapling <context.location.material.name>
+                - if <[origin_sapling]> == air:
+                    - define origin_sapling <context.location.flag[ToughAsNailsU_sapling].if_null[air]>
 
                 #- narrate <[origin_sapling]>
                 #- narrate <[sapling_from_leaf]>
@@ -35,30 +41,24 @@ ToughAsNailsU_trees_actions:
                     - run toughasnailsu_advancement_custom_tree
                     - stop
 
+                #- narrate biome_tree
 
                 - define data <script[toughasnailsu_trees_data].data_key[biomes]>
                 - if !<[data].contains[<[biome]>]>:
                     - stop
 
                 - define name <[data].get[<[biome]>].random>
-                - define sapling <context.location.material>
-                - narrate <[name]>
+                #- define sapling <context.location.material>
+                #- narrate <[name]>
 
                 - modifyblock <context.location> air
 
                 - define command "place feature <[name]> <context.location.x> <context.location.y> <context.location.z>"
-                - execute as_op player:<context.location.world.players.get[1]> <[command]>
+                - execute as_op player:<context.location.world.players.get[1]> <[command]> silent
                 - if <context.location.material.name> == air:
-                    - modifyblock <[sapling]> <context.location>
+                    - modifyblock <[origin_sapling]> <context.location>
 
                 - run toughasnailsu_advancement_custom_tree
-
-            #- announce <green><player.name.if_null[null]>
-#
-            ##- define name terralith:mountains/misty/trees_base
-            #- define data <script[toughasnailsu_trees_data].data_key[biomes]>
-            #- define name <[data].get[<[data].keys.random>].random>
-            ##- define name terralith:taiga/siberian/trees_new_orange
 
 
 ToughAsNailsU_from_leaf_to_sapling:

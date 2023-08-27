@@ -71,6 +71,7 @@ EndPortalU_display_chest_entity:
 #----------------------
 EndPortalU_ice_eye:
     type: item
+    debug: false
     material: ender_eye
     display name: <yellow><&translate[item.endportalu.ice_eye]>
     mechanisms:
@@ -78,6 +79,7 @@ EndPortalU_ice_eye:
 
 EndPortalU_nether_eye:
     type: item
+    debug: false
     material: ender_eye
     display name: <yellow><&translate[item.endportalu.nether_eye]>
     mechanisms:
@@ -85,6 +87,7 @@ EndPortalU_nether_eye:
 
 EndPortalU_water_eye:
     type: item
+    debug: false
     material: ender_eye
     display name: <yellow><&translate[item.endportalu.water_eye]>
     mechanisms:
@@ -92,6 +95,7 @@ EndPortalU_water_eye:
 
 EndPortalU_old_eye:
     type: item
+    debug: false
     material: ender_eye
     display name: <yellow><&font[uniform]><&translate[item.endportalu.old_eye]>
     mechanisms:
@@ -99,6 +103,7 @@ EndPortalU_old_eye:
 
 EndPortalU_desert_eye:
     type: item
+    debug: false
     material: ender_eye
     display name: <yellow><&translate[item.endportalu.desert_eye]>
     mechanisms:
@@ -106,6 +111,7 @@ EndPortalU_desert_eye:
 
 EndPortalU_illusion_eye:
     type: item
+    debug: false
     material: ender_eye
     display name: <yellow><&translate[item.endportalu.illusion_eye]>
     mechanisms:
@@ -113,6 +119,7 @@ EndPortalU_illusion_eye:
 
 EndPortalU_ancient_eye:
     type: item
+    debug: false
     material: ender_eye
     display name: <yellow><&translate[item.endportalu.ancient_eye]>
     mechanisms:
@@ -165,17 +172,17 @@ EndPortalU_loot_spawn_events:
     debug: false
     events:
         on loot generates:
-            - announce <context.loot_table_id>
+            #- announce <context.loot_table_id>
             - define data <static[<script[EndPortalU_data].data_key[loot_table_id]>]>
 
             - if !<[data].contains[<context.loot_table_id>]>:
-                - announce <red>no_eye
+                #- announce <red>no_eye
                 - stop
 
             - define item_data <[data].get[<context.loot_table_id>]>
-            - announce "<yellow>rolling_loot chance:<[item_data].get[chance].if_null[1].mul[100]>%"
+            #- announce "<yellow>rolling_loot chance:<[item_data].get[chance].if_null[1].mul[100]>%"
             - if <util.random_chance[<[item_data].get[chance].if_null[1].mul[100]>]>:
-                - announce <green>yes!
+                #- announce <green>yes!
                 - define quantity <util.random.int[<[item_data].get[min].if_null[1]>].to[<[item_data].get[max].if_null[1]>]>
                 - determine LOOT:<context.items.include[<item[<[item_data].get[item]>].with[quantity=<[quantity]>]>]>
 
@@ -224,7 +231,7 @@ EndPortalU_portal_events:
             - determine cancelled passively
 
             #- playeffect effect:DRAGON_BREATH at:<[loc].center.above[0.3]> quantity:10 offset:0.5,0,0.5 velocity:0,0.01,0
-            - playeffect effect:ENDEREYE_LAUNCH at:<[loc].center.above[0.7/]>
+            - playeffect effect:ENDER_SIGNAL at:<[loc].center.above[0.65]>
 
             #- define start_loc <[chest_loc].center.above[0.9]>
             #- define dest_Loc <[loc].center.above[0.3]>
@@ -234,20 +241,20 @@ EndPortalU_portal_events:
             - if <[missing_eyes].size> == 1:
                 - define eye_locs <list[<[chest_loc].center.above>]>
             - else:
-                - define eye_locs <[chest_loc].center.above[1.5].points_around_z[radius=0.47;points=<[missing_eyes].size>]>
+                - define eye_locs <[chest_loc].center.above[1.5].points_around_y[radius=0.7;points=<[missing_eyes].size>]>
             - define modify_entities <list[]>
 
 
             #- define start_loc <[loc].forward[3].center.above[0.3]>
             - foreach <[eye_locs]> as:new_eye_loc:
-                - fakespawn EndPortalU_display_eye_entity[item=<item[<[missing_eyes].get[<[loop_index]>]>]>] <[new_eye_loc]> players:<server.online_players> save:eye d:3s
+                - fakespawn EndPortalU_display_eye_entity[item=<item[<[missing_eyes].get[<[loop_index]>]>]>] <[new_eye_loc]> players:<server.online_players> save:eye d:5s
                 - define eye_entities:->:<entry[eye].faked_entity>
                 #- playeffect effect:DRAGON_BREATH at:<[start_loc].points_between[<[new_eye_loc]>].distance[0.3]> quantity:1 offset:0
 
             - define all_entities <[eye_entities]>
 
             - if !<[chest_loc].has_inventory>:
-                - fakespawn EndPortalU_display_chest_entity <[chest_loc]> players:<server.online_players> save:chest d:3s
+                - fakespawn EndPortalU_display_chest_entity <[chest_loc]> players:<server.online_players> save:chest d:5s
                 - define all_entities:->:<entry[chest].faked_entity>
 
 
@@ -258,7 +265,7 @@ EndPortalU_portal_events:
             - adjust <[all_entities]> interpolation_duration:5t
             - adjust <[all_entities]> interpolation_start:0
 
-            - wait <duration[3s].sub[7t]>
+            - wait <duration[5s].sub[7t]>
 
             - adjust <[all_entities]> scale:0,0,0
             - adjust <[all_entities]> interpolation_duration:5t

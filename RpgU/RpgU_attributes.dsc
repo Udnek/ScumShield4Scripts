@@ -1,11 +1,13 @@
-RpgU_can_apply_stone:
+RpgU_is_attributes_zero:
     type: procedure
     debug: false
-    definitions: item|stone
+    definitions: attributes
     script:
-        - if <[item].attribute_modifiers.proc[rpgu_attributes_to_slot]> == <[stone].attribute_modifiers.proc[rpgu_attributes_to_slot]>:
-            - determine true
-        - determine false
+        - foreach <[attributes]> key:attr_name as:attrs_list:
+            - foreach <[attrs_list]> as:attr:
+                - if <[attr].get[amount]> != 0:
+                    - determine false
+        - determine true
 
 
 RpgU_attributes_to_slot:
@@ -54,49 +56,6 @@ RpgU_merge_attributes:
         - determine <[item]>
 
 
-RpgU_apply_upgrade_stone:
-    type: procedure
-    definitions: item|stone
-    script:
-        - define attrs_sum_stone <[stone].attribute_modifiers.proc[rpgu_attributes_sum]>
-
-        - if <[item].attribute_modifiers.size> == 0:
-            - adjust def:item add_attribute_modifiers:<[item].proc[rpgu_get_default_attributes]>
-
-        - define attrs_main_slot <[item].attribute_modifiers.proc[rpgu_attributes_to_slot]>
-
-        - foreach <[attrs_sum_stone]> key:attr_name as:values1:
-            - foreach <[values1]> key:slot as:values2:
-                - foreach <[values2]> key:operation as:amount:
-                    - if <[slot]> == <[attrs_main_slot]>:
-                        - define attribute <map[<[attr_name]>=<map[operation=<[operation]>;amount=<[amount]>;slot=<[slot]>]>]>
-                        - adjust def:item add_attribute_modifiers:<[attribute]>
-
-        - determine <[item].proc[rpgu_merge_attributes]>
-
-
-RpgU_stone_from_item:
-    type: procedure
-    debug: false
-    definitions: item
-    script:
-        #- define item_attr_sum <[item].proc[rpgu_attributes_sum]>
-        #- define attr_slot <[item].attribute_modifiers.proc[rpgu_attributes_to_slot]>
-        #- define default_attr_sum <[item].default_attribute_modifiers[<[attr_slot]>].proc[rpgu_attributes_sum]>
-        - define default_attr_sum <[item].proc[rpgu_get_default_attributes].proc[rpgu_attributes_sum]>
-
-        - define stone <item[rpgu_upgrade_stone]>
-        - adjust def:stone add_attribute_modifiers:<[item].attribute_modifiers>
-
-        - foreach <[default_attr_sum]> key:attr_name as:values1:
-            - foreach <[values1]> key:slot as:values2:
-                - foreach <[values2]> key:operation as:amount:
-                    - define attribute <map[<[attr_name]>=<map[operation=<[operation]>;amount=<[amount].mul[-1]>;slot=<[slot]>]>]>
-                    - adjust def:stone add_attribute_modifiers:<[attribute]>
-
-        - determine <[stone].proc[rpgu_merge_attributes]>
-
-
 RpgU_get_default_attributes:
     type: procedure
     debug: false
@@ -113,55 +72,6 @@ RpgU_get_default_attributes:
                     - define result.<[attr_name]>:->:<[attr]>
         - determine <[result]>
 
-# TODO DO NOT WORK
-RpgU_generate_lore:
-    type: procedure
-    debug: false
-    definitions: item
-    script:
-        - define attrs <[item].attribute_modifiers>
-        - define attrs_sum <map[]>
-        - foreach <[attrs]> key:attr_name as:attr_list:
-            - foreach <[attr_list]> as:attr:
-                #- if <[attr_sum].contains[<[attr_name]>]>:
-                #- if <[attr_sum].get[<[attr_name]>].get[operation]> == <[attr].get[operation]>:
-                - define attrs_sum.<[attr_name]>.<[attr].get[operation]>:+:<[attr].get[amount]>
-                #- else:
-                #    - define attr_sum.<[attr_name]>:<[attr].get[amount]>
-
-
-        - define lore <&translate[item.modifiers.<[attrs].get[].get[slot]>]>
-        - foreach <[attrs_sum].get_subset[<[attrs_sum].keys.sort_by_value[]>]> key:attr_name as:values:
-            - foreach <[values]> key:operation as:amount:
-
-                - define attr_name_translated <&translate[attribute.name.generic.<[attr_name].after[GENERIC_].to_lowercase>]>
-
-                - if <[operation]> == ADD_SCALAR:
-                    - define amount_suffix %
-                    - define amount:*:100
-                - else if <[attr_name]> == GENERIC_KNOCKBACK_RESISTANCE:
-                    - define amount_suffix %
-                    - define amount:*:100
-                - else:
-                    - define amount_suffix <empty>
-
-                - if <[amount]> > 0:
-                    - define color <color[green]>
-                    - define amount +<[amount]>
-                - else:
-                    - define color <color[red]>
-
-                - define lore "<[lore]><&nl><&color[<[color]>]><[amount]><[amount_suffix]> <[attr_name_translated]>"
-
-        - determine <[item].with[lore=<[lore]>]>
-
-
-RpgU_generate_upgrade_stone:
-    type: procedure
-    definitions: item_type|level|level_type|slot
-    script:
-        - define item <item[rpgu_upgrade_stone]>
-        - determine <[item].proc[rpgu_generate_attributes].context[<[item_type]>|<[level]>|<[level_type]>|<[slot]>]>
 
 RpgU_generate_attributes:
     type: procedure
@@ -237,31 +147,31 @@ RpgU_generate_attributes:
 
                         # armor and tool
                         - default:
-                            - define amount <util.random.decimal[-0.01].to[0.01].mul[<[level]>].round_to[1]>
+                            - define amount <util.random.decimal[-0.01].to[0.01].mul[<[level]>].round_to[2]>
                             - define operation ADD_SCALAR
 
                 - case generic_attack_speed:
                     - choose <[item_type]>:
                         - case sword:
-                            - define amount <util.random.decimal[-0.05].to[0.06].mul[<[level]>].round_to[1]>
+                            - define amount <util.random.decimal[-0.05].to[0.06].mul[<[level]>].round_to[2]>
                         - case axe:
-                            - define amount <util.random.decimal[-0.03].to[0.04].mul[<[level]>].round_to[1]>
+                            - define amount <util.random.decimal[-0.03].to[0.04].mul[<[level]>].round_to[2]>
                         - case trident:
-                            - define amount <util.random.decimal[-0.06].to[0.07].mul[<[level]>].round_to[1]>
+                            - define amount <util.random.decimal[-0.06].to[0.07].mul[<[level]>].round_to[2]>
                         # armor and tool
                         - default:
-                            - define amount <util.random.decimal[-0.03].to[0.04].mul[<[level]>].round_to[1]>
-                        - define operation ADD_SCALAR
+                            - define amount <util.random.decimal[-0.03].to[0.04].mul[<[level]>].round_to[2]>
+                    - define operation ADD_SCALAR
 
                 - case generic_movement_speed:
                     - if <[item_type]> == sword:
-                        - define amount <util.random.decimal[-0.1].to[0.1].mul[<[level]>].round_to[1]>
+                        - define amount <util.random.decimal[-0.1].to[0.1].mul[<[level]>].round_to[2]>
                     - else:
-                        - define amount <util.random.decimal[-0.02].to[0.02].mul[<[level]>].round_to[1]>
+                        - define amount <util.random.decimal[-0.015].to[0.02].mul[<[level]>].round_to[2]>
                     - define operation ADD_SCALAR
 
                 - case generic_knockback_resistance:
-                    - define amount <util.random.decimal[-0.05].to[0.05].mul[<[level]>].round_to[1]>
+                    - define amount <util.random.decimal[-0.04].to[0.05].mul[<[level]>].round_to[2]>
                     - define operation ADD_NUMBER
 
 
@@ -300,3 +210,88 @@ RpgU_can_have_upgrades:
         - if <[item].proc[rpgu_get_default_attributes].size> == 0:
             - determine false
         - determine true
+
+RpgU_real_attributes:
+    type: procedure
+    debug: false
+    definitions: item
+    script:
+        - if <[item].attribute_modifiers.size> == 0:
+            - determine <[item].proc[rpgu_get_default_attributes]>
+        - determine <[item].attribute_modifiers>
+#----------------------------- STONE
+RpgU_can_apply_stone:
+    type: procedure
+    debug: false
+    definitions: item|stone
+    script:
+        - if <[stone].attribute_modifiers.size> == 0:
+            - determine false
+        - if <[item].proc[rpgu_real_attributes].proc[rpgu_attributes_to_slot]> == <[stone].attribute_modifiers.proc[rpgu_attributes_to_slot]>:
+            - if <[item].proc[rpgu_stones_applied_amount]> < 3:
+                - determine true
+        - determine false
+
+RpgU_apply_upgrade_stone:
+    type: procedure
+    debug: false
+    definitions: item|stone
+    script:
+        - define attrs_sum_stone <[stone].attribute_modifiers.proc[rpgu_attributes_sum]>
+
+        - if <[item].attribute_modifiers.size> == 0:
+            - adjust def:item add_attribute_modifiers:<[item].proc[rpgu_get_default_attributes]>
+
+        - define attrs_main_slot <[item].attribute_modifiers.proc[rpgu_attributes_to_slot]>
+
+        - foreach <[attrs_sum_stone]> key:attr_name as:values1:
+            - foreach <[values1]> key:slot as:values2:
+                - foreach <[values2]> key:operation as:amount:
+                    - if <[slot]> == <[attrs_main_slot]>:
+                        - define attribute <map[<[attr_name]>=<map[operation=<[operation]>;amount=<[amount]>;slot=<[slot]>]>]>
+                        - adjust def:item add_attribute_modifiers:<[attribute]>
+
+        - define item <[item].with_flag[RpgU.upgrade_stones:+:1].proc[rpgu_merge_attributes].proc[rpgu_generate_lore]>
+        - determine <[item]>
+
+RpgU_stones_applied_amount:
+    type: procedure
+    debug: false
+    definitions: item
+    script:
+        - if <[item].has_flag[RpgU.upgrade_stones]>:
+            - determine <[item].flag[RpgU.upgrade_stones]>
+        - determine 0
+
+RpgU_item_to_stone:
+    type: procedure
+    debug: false
+    definitions: item
+    script:
+        - define default_attr_sum <[item].proc[rpgu_get_default_attributes].proc[rpgu_attributes_sum]>
+
+        - if <[item].attribute_modifiers.size> == 0:
+            - adjust def:item add_attribute_modifiers:<[item].proc[rpgu_get_default_attributes]>
+
+        - define stone <item[rpgu_upgrade_stone]>
+        - adjust def:stone add_attribute_modifiers:<[item].attribute_modifiers>
+
+        - foreach <[default_attr_sum]> key:attr_name as:values1:
+            - foreach <[values1]> key:slot as:values2:
+                - foreach <[values2]> key:operation as:amount:
+                    - define attribute <map[<[attr_name]>=<map[operation=<[operation]>;amount=<[amount].mul[-1]>;slot=<[slot]>]>]>
+                    - adjust def:stone add_attribute_modifiers:<[attribute]>
+
+        - define stone <[stone].proc[rpgu_merge_attributes]>
+        - define item_extra_data <[stone].attribute_modifiers.proc[rpgu_attributes_to_slot].proc[rpgu_slot_to_data]>
+        - define lore <gray><&translate[item.rpgu.upgrade_stone]><&nl><&nl><gray><&translate[item.minecraft.smithing_template.applies_to]><&nl><&translate[item.rpgu.upgrade_stone.space_before_type]><&translate[<[item_extra_data].get[lore]>]>
+        - determine <[stone].with[custom_model_data=<[item_extra_data].get[cmd]>;lore=<[lore]>]>
+
+RpgU_generate_upgrade_stone:
+    type: procedure
+    definitions: item_type|level|level_type|slot
+    script:
+        - define item <item[rpgu_upgrade_stone]>
+        - determine <[item].proc[rpgu_generate_attributes].context[<[item_type]>|<[level]>|<[level_type]>|<[slot]>]>
+#-----------------------------
+
