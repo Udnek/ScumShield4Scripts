@@ -259,6 +259,13 @@ RpgU_spawn_events:
     type: world
     debug: false
     events:
+        after player joins:
+            - adjust <player> attribute_base_values:<map[generic_max_health=10]>
+
+        on entity picks up item:
+            - if <context.entity.proc[rpgu_is_equippable]>:
+                - determine cancelled
+
         on entity spawns:
             - if <context.entity.proc[rpgu_is_equippable]>:
                 - define equipment <context.entity.proc[rpgu_generate_equipment_for_mob]>

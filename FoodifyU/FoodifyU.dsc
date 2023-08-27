@@ -7,32 +7,32 @@ FoodifyU_data:
         cooked_beef:
             effect:
                 type: damage_resistance
-                duration: 20s
+                duration: 25s
             color: *713f2d
         cooked_mutton:
             effect:
                 type: damage_resistance
-                duration: 20s
+                duration: 25s
             color: *9d6147
         cooked_rabbit:
             effect:
                 type: damage_resistance
-                duration: 60s
+                duration: 55s
             color: *d28e62
         cooked_porkchop:
             effect:
                 type: damage_resistance
-                duration: 20s
+                duration: 25s
             color: *d3c088
         cooked_chicken:
             effect:
                 type: damage_resistance
-                duration: 20s
+                duration: 25s
             color: *cd7d4a
         foodifyu_cooked_hogmeat:
             effect:
                 type: fire_resistance
-                duration: 12s
+                duration: 20s
             color: *ea914d
         ## FISH
 
@@ -62,12 +62,12 @@ FoodifyU_data:
         baked_potato:
             effect:
                 type: absorption
-                duration: 15s
+                duration: 30s
             color: *d5ac37
         apple:
             effect:
                 type: slow_falling
-                duration: 3s
+                duration: 30s
             color: *ff1c2b
         beetroot:
             effect:
@@ -84,17 +84,17 @@ FoodifyU_data:
         glow_berries:
             effect:
                 type: increase_damage
-                duration: 20s
+                duration: 30s
             color: *f19645
         carrot:
             effect:
                 type: night_vision
-                duration: 60s
+                duration: 80s
             color: *ff8e09
         melon_slice:
             effect:
-                type: regeneration
-                duration: 15s
+                type: speed
+                duration: 30s
             color: *bf3123
 
         ## MISC

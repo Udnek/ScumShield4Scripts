@@ -187,7 +187,7 @@ EndPortalU_loot_spawn_events:
     debug: false
     events:
         on loot generates:
-            - announce <context.loot_table_id>
+            #- announce <context.loot_table_id>
             - define data <script[EndPortalU_data].data_key[loot_table_id]>
 
             - if !<[data].contains[<context.loot_table_id>]>:

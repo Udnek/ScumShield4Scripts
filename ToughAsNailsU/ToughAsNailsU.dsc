@@ -1005,8 +1005,8 @@ ToughAsNailsU_flask_actions:
                 - if <proc[ToughAsNailsU_is_flaskable].context[<[item]>]>:
                     - define result <[flask].proc[toughasnailsu_flask_put_in].context[<[item]>]>
                     - adjust <player> item_on_cursor:<[result].get[flask]>
-                    - inventory set o:<[result].get[item]> slot:<context.slot>
-                    - give toughasnailsu_drinking_glass_bottle quantity:<[result].get[amount]>
+                    - inventory set o:<[result].get[item]> slot:<context.slot> d:<context.clicked_inventory>
+                    - give toughasnailsu_drinking_glass_bottle quantity:<[result].get[amount]> to:<context.clicked_inventory>
                     - if <[result].get[flask].inventory_contents.size> == 64:
                         - run toughasnailsu_advancement_flask_full def:<[result].get[flask]>
 
@@ -1020,8 +1020,8 @@ ToughAsNailsU_flask_actions:
                 - if <[item].proc[ToughAsNailsU_is_flaskable]>:
                     - define result <[flask].proc[toughasnailsu_flask_put_in].context[<[item]>]>
                     - adjust <player> item_on_cursor:<[result].get[item]>
-                    - inventory set o:<[result].get[flask]> slot:<context.slot>
-                    - give toughasnailsu_drinking_glass_bottle quantity:<[result].get[amount]>
+                    - inventory set o:<[result].get[flask]> slot:<context.slot> d:<context.clicked_inventory>
+                    - give toughasnailsu_drinking_glass_bottle quantity:<[result].get[amount]> to:<context.clicked_inventory>
                     - if <[result].get[flask].inventory_contents.size> == 64:
                         - run toughasnailsu_advancement_flask_full def:<[result].get[flask]>
 

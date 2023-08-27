@@ -29,8 +29,7 @@ RpgU_slot_to_data:
 RpgU_upgrade_stone:
     type: item
     debug: false
-    material: paper #netherite_upgrade_smithing_template
-                #paper
+    material: paper
     display name: <reset><&translate[item.minecraft.smithing_template]>
     mechanisms:
         hides: ITEM_DATA
@@ -40,7 +39,9 @@ RpgU_upgrade_stone:
 RpgU_upgrade_stone_technical_craft:
     type: item
     debug: false
-    material: nether_brick
+    material: paper
+    mechanisms:
+        custom_model_data: 100004
     recipes:
        1:
            type: smithing
@@ -93,6 +94,17 @@ RpgU_smithing_events:
                 - determine <item[air]>
 
             - determine <[main_item].proc[rpgu_apply_upgrade_stone].context[<[template]>]>
+
+
+#RpgU_craft_events:
+#    type: world
+#    debug: false
+#    events:
+#        on item recipe formed:
+#            - if <context.recipe_id> == minecraft:repair_item:
+#                - announce nice
+#    	on player prepares grindstone craft item
+#                #- determine cancelled
 
 
 #TODO REMOVE
