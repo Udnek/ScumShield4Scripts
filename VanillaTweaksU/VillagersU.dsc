@@ -15,6 +15,6 @@ VillagersU_events:
                 - else:
                     - define new_trade <[trade]>
 
-                - define new_trades:->:<[new_trade].with[price_multiplier=0;special_price=<[trade].inputs.get[1].quantity.div[2].round>]>
+                - define new_trades:->:<[new_trade].with[price_multiplier=0;special_price=0]>
 
             - adjust <[villager]> trades:<[new_trades]>

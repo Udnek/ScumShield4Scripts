@@ -25,9 +25,24 @@ EndPortalU_data:
             chance: 0.4
             item: EndPortalU_old_eye
 
-        minecraft:chests/desert_pyramid:
-            chance: 0.4
+        #minecraft:chests/desert_pyramid:
+        #    chance: 0.4
+        #    item: EndPortalU_desert_eye
+        minecraft:archaeology/desert_pyramid:
+            chance: 0.5
             item: EndPortalU_desert_eye
+            replace:
+                - gunpowder
+                - tnt
+                - emerald
+        minecraft:archaeology/desert_well:
+            chance: 0.5
+            item: EndPortalU_desert_eye
+            replace:
+                - brick
+                - emerald
+                - stick
+
 
         minecraft:chests/woodland_mansion:
             chance: 0.4
@@ -172,26 +187,35 @@ EndPortalU_loot_spawn_events:
     debug: false
     events:
         on loot generates:
-            #- announce <context.loot_table_id>
-            - define data <static[<script[EndPortalU_data].data_key[loot_table_id]>]>
+            - announce <context.loot_table_id>
+            - define data <script[EndPortalU_data].data_key[loot_table_id]>
 
             - if !<[data].contains[<context.loot_table_id>]>:
-                #- announce <red>no_eye
                 - stop
 
             - define item_data <[data].get[<context.loot_table_id>]>
-            #- announce "<yellow>rolling_loot chance:<[item_data].get[chance].if_null[1].mul[100]>%"
             - if <util.random_chance[<[item_data].get[chance].if_null[1].mul[100]>]>:
-                #- announce <green>yes!
                 - define quantity <util.random.int[<[item_data].get[min].if_null[1]>].to[<[item_data].get[max].if_null[1]>]>
                 - determine LOOT:<context.items.include[<item[<[item_data].get[item]>].with[quantity=<[quantity]>]>]>
 
+        on player right clicks suspicious_* with:brush using:either_hand:
+            - if !<context.location.has_loot_table>:
+                - stop
+            - if <script[EndPortalU_data].data_key[loot_table_id]> !contains <context.location.loot_table_id>:
+                - stop
+                    #- flag <context.location> EndPortalU_loot_table_id:<context.location.loot_table_id> expire:1t
 
-        on ender_signal removed from world:
-            - announce <context.entity.entity_type>
-            - define loc <context.entity.location>
+            - define item_data <script[EndPortalU_data].data_key[loot_table_id].get[<context.location.loot_table_id>]>
+            - if !<util.random_chance[<[item_data].get[chance].if_null[1].mul[100]>]>:
+                - stop
 
+            - wait 6t
 
+            - if <context.location.has_loot_table>:
+                - stop
+            - if <[item_data].get[replace].if_null[<list[]>].parse[as[item]]> !contains <context.location.buried_item>:
+                - stop
+            - adjust <context.location> buried_item:<item[<[item_data].get[item]>]>
 
 EndPortalU_loot_drop_events:
     type: world
