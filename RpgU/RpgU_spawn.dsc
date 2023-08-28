@@ -263,7 +263,7 @@ RpgU_spawn_events:
             - adjust <player> attribute_base_values:<map[generic_max_health=10]>
 
         on entity picks up item:
-            - if <context.entity.proc[rpgu_is_equippable]>:
+            - if <context.pickup_entity.proc[rpgu_is_equippable]>:
                 - determine cancelled
 
         on entity spawns:
