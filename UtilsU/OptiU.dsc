@@ -26,11 +26,11 @@ OptiU_events:
             - flag server OptiU.previos_mspt:0
 
 
-        after system time 03:00:
-            - announce "<red><bold>РЕСТАРТ СЕРВЕРА ЧЕРЕЗ 2 МИНУТЫ"
-            - title "title:<red><bold>РЕСТАРТ СЕРВЕРА" "subtitle:ЧЕРЕЗ <red><bold>2 <reset>МИНУТЫ" stay:15s targets:<server.online_players>
-            - wait 2m
-            - adjust server restart
+        #after system time 03:00:
+        #    - announce "<red><bold>РЕСТАРТ СЕРВЕРА ЧЕРЕЗ 2 МИНУТЫ"
+        #    - title "title:<red><bold>РЕСТАРТ СЕРВЕРА" "subtitle:ЧЕРЕЗ <red><bold>2 <reset>МИНУТЫ" stay:15s targets:<server.online_players>
+        #    - wait 2m
+        #    - adjust server restart
 
 
 OptiU_standart_optimization:

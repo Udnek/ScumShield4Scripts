@@ -268,6 +268,8 @@ FoodifyU_generate_item:
 
         ##DATA
 
+        - define ingredients <[ingredients].sort_by_value[proc[UtilsU_item_actual_name]]>
+
         - define effects <map[]>
         - define used_ingredients <list[]>
         - foreach <[ingredients]> as:item:
