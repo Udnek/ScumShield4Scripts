@@ -42,30 +42,30 @@ ToughAsNailsU_armor_data:
         leather_leggings: 0.87
         leather_boots: 0.87
 
-        chainmail_helmet: 0.99
-        chainmail_chestplate: 0.99
-        chainmail_leggings: 0.99
-        chainmail_boots: 0.99
+        chainmail_helmet: 0.9
+        chainmail_chestplate: 0.9
+        chainmail_leggings: 0.9
+        chainmail_boots: 0.9
 
         golden_helmet: 1.07
         golden_chestplate: 1.07
         golden_leggings: 1.07
         golden_boots: 1.07
 
-        iron_helmet: 1.07
-        iron_chestplate: 1.07
-        iron_leggings: 1.07
-        iron_boots: 1.07
+        iron_helmet: 1.1
+        iron_chestplate: 1.1
+        iron_leggings: 1.1
+        iron_boots: 1.1
 
-        diamond_helmet: 1.1
-        diamond_chestplate: 1.1
-        diamond_leggings: 1.1
-        diamond_boots: 1.1
+        diamond_helmet: 1.2
+        diamond_chestplate: 1.2
+        diamond_leggings: 1.2
+        diamond_boots: 1.12
 
-        netherite_helmet: 0.98
-        netherite_chestplate: 0.98
-        netherite_leggings: 0.98
-        netherite_boots: 0.98
+        netherite_helmet: 1
+        netherite_chestplate: 1
+        netherite_leggings: 1
+        netherite_boots: 1
 
     armor_add:
         leather_helmet: 2.5
@@ -93,10 +93,10 @@ ToughAsNailsU_armor_data:
         diamond_leggings: 0
         diamond_boots: 0
 
-        netherite_helmet: -3
-        netherite_chestplate: -3
-        netherite_leggings: -3
-        netherite_boots: -3
+        netherite_helmet: 0
+        netherite_chestplate: 0
+        netherite_leggings: 0
+        netherite_boots: 0
 
 #--------------------------------
 ToughAsNailsU_anabiosis_entity:
@@ -994,7 +994,7 @@ ToughAsNailsU_flask_actions:
         on player right clicks ToughAsNailsU_* in inventory with:air:
             - if <context.item.has_flag[ToughAsNailsU_flask]>:
                 - determine cancelled passively
-                - inventory set slot:<context.slot> o:<context.item.proc[toughasnailsu_flask_back_to_flask]>
+                - inventory set slot:<context.slot> o:<context.item.proc[toughasnailsu_flask_back_to_flask]> destination:<context.clicked_inventory>
 
         on player right clicks item in inventory with:ToughAsNailsU_flask:
             - determine cancelled passively

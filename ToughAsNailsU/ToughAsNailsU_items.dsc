@@ -47,17 +47,17 @@ ToughAsNailsU_items_data:
         ToughAsNailsU_pure_water_bottle: 6|-15|20s
         ToughAsNailsU_boiling_water_bottle: 6|+15|20s
 
-        ToughAsNailsU_green_sweet_berry_tea_bottle: 10|+25|90s
-        ToughAsNailsU_green_glow_berry_tea_bottle: 10|+25|90s
-        ToughAsNailsU_green_sugar_tea_bottle: 10|+25|90s
+        ToughAsNailsU_green_sweet_berry_tea_bottle: 10|+30|100s
+        ToughAsNailsU_green_glow_berry_tea_bottle: 10|+30|100s
+        ToughAsNailsU_green_sugar_tea_bottle: 10|+30|100s
 
-        ToughAsNailsU_melon_juice_bottle: 10|-20|20s
-        ToughAsNailsU_carrot_juice_bottle: 10|-20|20s
-        ToughAsNailsU_sweet_berries_juice_bottle: 10|-20|20s
-        ToughAsNailsU_amethyst_water_bottle: 10|-25|50s
+        ToughAsNailsU_melon_juice_bottle: 10|-20|40s
+        ToughAsNailsU_carrot_juice_bottle: 10|-20|40s
+        ToughAsNailsU_sweet_berries_juice_bottle: 10|-20|40s
+        ToughAsNailsU_amethyst_water_bottle: 10|-35|100s
 
         ToughAsNailsU_wheat_wort_bottle: 6|+10|20s
-        ToughAsNailsU_wheat_beer_bottle: 10|-25|40s
+        ToughAsNailsU_wheat_beer_bottle: 10|-25|120s
 
     fixed_bottle:
         - ToughAsNailsU_green_sweet_berry_tea_bottle
