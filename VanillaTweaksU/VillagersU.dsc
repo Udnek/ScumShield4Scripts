@@ -18,3 +18,12 @@ VillagersU_events:
                 - define new_trades:->:<[new_trade].with[price_multiplier=0;special_price=0]>
 
             - adjust <[villager]> trades:<[new_trades]>
+
+        #after player right clicks villager with:netherite_sword:
+        #    - narrate <context.entity.describe>
+        #    - adjust <context.entity> has_ai:false
+        #    - adjust <context.entity> villager_level:5
+        #    - adjust <context.entity> villager_experience:999999
+#
+        #after villager acquires trade:
+        #    - announce OK

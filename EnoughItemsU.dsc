@@ -116,10 +116,13 @@ EnoughItemsU_recipe_gui:
 EnoughItemsU_open_new_recipe_gui:
     type: task
     debug: false
-    definitions: item
+    definitions: item|has_inv|inv
     script:
         - if ( <[item].material.name> != air ) && ( <[item].proc[enoughitemsu_all_recipe_ids].size> > 0 ):
-            - run EnoughItemsU_open_recipe_gui def:<player>|<[item]>|1|false|false
+            - if <[has_inv]>:
+                - run EnoughItemsU_open_recipe_gui def:<player>|<[item]>|1|false|<[inv]>
+            - else:
+                - run EnoughItemsU_open_recipe_gui def:<player>|<[item]>|1|false|false
 
 EnoughItemsU_open_recipe_gui:
     type: task
@@ -307,7 +310,6 @@ EnoughItemsU_gui_actions:
     events:
 
         after player clicks item in EnoughItemsU_recipe_gui:
-            #- narrate "after player clicks item in EnoughItemsU_recipe_gui"
             - if ( <context.item.material.name> != air ) && ( <context.item.recipe_ids.size> > 0 ) && ( <context.inventory.list_contents.get[34]> != <context.item> ):
                 - run EnoughItemsU_open_recipe_gui def:<player>|<context.item>|1|<context.inventory.list_contents.get[34]>|false
 
@@ -343,8 +345,8 @@ EnoughItemsU_recipe_command:
     script:
         - if <context.args.first.if_null[null]> != null:
             - if <item[<context.args.first>].if_null[null]> != null:
-                - run EnoughItemsU_open_new_recipe_gui def:<item[<context.args.first>]>
+                - run EnoughItemsU_open_new_recipe_gui def:<item[<context.args.first>]>|false|false
                 - stop
-        - run EnoughItemsU_open_new_recipe_gui def:<player.item_in_hand>
+        - run EnoughItemsU_open_new_recipe_gui def:<player.item_in_hand>|false|false
 
 

@@ -520,7 +520,7 @@ EchoU_recipes_gui_actions:
     debug: false
     events:
         after player clicks item in EchoU_recipes_gui:
-            - run EnoughItemsU_open_new_recipe_gui def:<context.item>
+            - run EnoughItemsU_open_new_recipe_gui def:<context.item>|true|<context.inventory.script.name>
 
 EchoU_commands:
     type: command

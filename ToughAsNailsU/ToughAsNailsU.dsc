@@ -213,16 +213,16 @@ ToughAsNailsU_water_type:
         - if !( ( <[location].material.name> matches water|kelp|seagrass|tall_seagrass|bubble_column ) || ( <[location].material.waterlogged.if_null[false]> ) ):
             - determine null
 
-        - define biome:<[location].biome.name>
-        - define sea_water:<list[beach]>
-        - define pure_water:<list[river]>
+        - define biome <[location].biome.name>
+        - define sea_water <list[beach]>
+        - define pure_water <list[river]>
 
         - if <[biome].contains_any_text[ocean]> || <[sea_water].contains[<[biome]>]>:
-            - define item:<item[toughasnailsu_sea_water_bottle]>
+            - define item <item[toughasnailsu_sea_water_bottle]>
         - else if <[biome].contains_any_text[river]> || <[pure_water].contains[<[biome]>]>:
-            - define item:<item[toughasnailsu_pure_water_bottle]>
+            - define item <item[toughasnailsu_pure_water_bottle]>
         - else:
-            - define item:<item[toughasnailsu_dirty_water_bottle]>
+            - define item <item[toughasnailsu_dirty_water_bottle]>
 
         - determine <[item]>
 
@@ -573,7 +573,8 @@ ToughAsNailsU_autoupdate_temperature:
                     #- define time <proc[toughasnailsu_time_to_sin].context[<player.location.world.time>].round_to[3]>
                    # - define time <player.location.light.sub[<player.location.light.blocks>].div[15]>
 
-                - define altitude_impact <player.location.y.round.sub[62].mul[-0.05]>
+                #- define altitude_impact <player.location.y.round.sub[62].mul[-0.05]>
+                - define altitude_impact 0
                 - define block_below_impact <[blocks_below_data].get[<player.location.below[0.6].material.name>].if_null[0]>
                 - define activity <player.is_sprinting.or[<player.swimming>].if_true[1].if_false[0]>
                 - define wet <proc[ToughAsNailsU_in_water].context[<player>].if_true[1].if_false[0]>
@@ -914,7 +915,7 @@ ToughAsNailsU_recipes_gui_actions:
     debug: false
     events:
         after player clicks item in ToughAsNailsU_recipes_gui:
-            - run EnoughItemsU_open_new_recipe_gui def:<context.item>
+            - run EnoughItemsU_open_new_recipe_gui def:<context.item>|true|<context.inventory.script.name>
 
 #------------------------
 ToughAsNailsU_flask_put_in:
@@ -931,8 +932,8 @@ ToughAsNailsU_flask_put_in:
             - define amount <element[64].sub[<[flask].inventory_contents.size>]>
             - define item <[item].with[quantity=<[item].quantity.sub[<[amount]>]>]>
 
-        - define flask_content <[item_f].repeat_as_list[<[amount]>]>
-        - define flask <[flask].with[inventory_contents=<[flask].inventory_contents.include[<[flask_content]>]>]>
+        - define new_flask_content <[item_f].repeat_as_list[<[amount]>]>
+        - define flask <[flask].with[inventory_contents=<[new_flask_content].include[<[flask].inventory_contents>]>]>
 
         - determine <map[flask=<[flask]>;item=<[item]>;amount=<[amount]>]>
 

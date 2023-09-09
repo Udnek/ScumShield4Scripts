@@ -9,9 +9,12 @@ RpgU_generate_lore:
             - define lore <&nl><gray><&translate[item.rpgu.upgrade_stone.lore.amount.<[stones]>]>
             - define item <[item].proc[autoloreu_create_ticket].context[RpgU|<[lore]>]>
         - else:
-            - define item <[item].proc[autoloreu_clear_ticket].context[RpgU]>
+            - define item <[item].proc[autoloreu_clear_ticket].context[RpgU].with[lore=]>
         - define item <[item].proc[autoloreu_generate]>
         - determine <[item]>
+
+
+
         #- define attrs <[item].attribute_modifiers>
         #- define attrs_sum <map[]>
         #- foreach <[attrs]> key:attr_name as:attr_list:

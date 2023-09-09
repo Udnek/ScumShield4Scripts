@@ -254,6 +254,18 @@ RpgU_apply_upgrade_stone:
         - define item <[item].with_flag[RpgU.upgrade_stones:+:1].proc[rpgu_merge_attributes].proc[rpgu_generate_lore]>
         - determine <[item]>
 
+RpgU_remove_upgrade_stones:
+    type: procedure
+    debug: false
+    definitions: item
+    script:
+        - if <[item].script.exists>:
+            - define attributes <[item].proc[utilsu_initial_item].attribute_modifiers>
+        - else:
+            - define attributes <map[]>
+        - define item <[item].with[attribute_modifiers=<[attributes]>].with_flag[RpgU.upgrade_stones:!].proc[rpgu_generate_lore]>
+        - determine <[item]>
+
 RpgU_stones_applied_amount:
     type: procedure
     debug: false
@@ -287,11 +299,11 @@ RpgU_item_to_stone:
         - define lore <gray><&translate[item.rpgu.upgrade_stone]><&nl><&nl><gray><&translate[item.minecraft.smithing_template.applies_to]><&nl><&translate[item.rpgu.upgrade_stone.space_before_type]><&translate[<[item_extra_data].get[lore]>]>
         - determine <[stone].with[custom_model_data=<[item_extra_data].get[cmd]>;lore=<[lore]>]>
 
-RpgU_generate_upgrade_stone:
-    type: procedure
-    definitions: item_type|level|level_type|slot
-    script:
-        - define item <item[rpgu_upgrade_stone]>
-        - determine <[item].proc[rpgu_generate_attributes].context[<[item_type]>|<[level]>|<[level_type]>|<[slot]>]>
+#RpgU_generate_upgrade_stone:
+#    type: procedure
+#    definitions: item_type|level|level_type|slot
+#    script:
+#        - define item <item[rpgu_upgrade_stone]>
+#        - determine <[item].proc[rpgu_generate_attributes].context[<[item_type]>|<[level]>|<[level_type]>|<[slot]>]>
 #-----------------------------
 

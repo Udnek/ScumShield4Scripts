@@ -103,7 +103,7 @@ RpgU_equipable_mobs_data:
                 wooden_sword: 3
                 iron_sword: 3
                 diamond_sword: 1
-                trident: 3
+                trident: 4
 
         piglin:
             armor:
@@ -217,8 +217,6 @@ RpgU_generate_equipment_for_mob:
 
         - define level <[altitude_mul].mul[<[local_diff_mul]>].mul[<[mob_diff_mul]>]>
 
-        #- announce <red>lvl=<[level]>>
-
         - define armor <list[]>
         - foreach <[entity].equipment> as:item:
             - if <[item].material.name> != air:
@@ -250,7 +248,7 @@ RpgU_is_equippable:
     debug: false
     definitions: entity
     script:
-        - if <static[<script[rpgu_equipable_mobs_data].data_key[mobs].keys>].contains[<[entity].entity_type>]>:
+        - if <static[<script[rpgu_equipable_mobs_data].data_key[mobs].keys>].contains[<[entity].proc[utilsu_entity_actual_name]>]>:
             - determine true
         - determine false
 
@@ -280,13 +278,15 @@ RpgU_spawn_events:
             - define new_drops <list[]>
             - foreach <context.drops> as:item:
                 - if <[item].proc[rpgu_can_have_upgrades]>:
-                    - define stone <[item].proc[rpgu_item_to_stone]>
-                    - if !<[stone].attribute_modifiers.proc[rpgu_is_attributes_zero]>:
-                        - define new_drops:->:<[item].proc[rpgu_item_to_stone]>
-                    #- if <util.random_chance[90]>:
-                    #    - define new_drops:->:<[item].proc[rpgu_item_to_stone]>
-                    #- else:
-                    #    - define new_drops:->:<[item]>
+
+                    - if <[item].proc[utilsu_item_actual_name]> == trident:
+                        - define new_drops:->:<[item].proc[rpgu_remove_upgrade_stones]>
+
+                    - else:
+                        - define stone <[item].proc[rpgu_item_to_stone]>
+                        - if !<[stone].attribute_modifiers.proc[rpgu_is_attributes_zero]>:
+                            - define new_drops:->:<[item].proc[rpgu_item_to_stone]>
+
                 - else:
                     - define new_drops:->:<[item]>
 

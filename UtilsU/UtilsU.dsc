@@ -43,6 +43,16 @@ UtilsU_round_up_ticks_duration:
 
 UtilsU_initial_item:
     type: procedure
+    debug: false
     definitions: item
     script:
         - determine <item[<[item].script.name>].with[quantity=<[item].quantity>]>
+
+UtilsU_entity_actual_name:
+    type: procedure
+    debug: false
+    definitions: entity
+    script:
+        - if <[entity].script.exists>:
+            - determine <[entity].script.name>
+        - determine <[entity].entity_type>
