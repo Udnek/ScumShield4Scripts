@@ -8,6 +8,7 @@ ToughAsNailsU_blocks_data:
         lava: 12
         fire: 5
         soul_fire: 10
+        lava_cauldron: 11
         small_amethyst_bud: -3
         medium_amethyst_bud: -7
         large_amethyst_bud: -10
@@ -565,16 +566,17 @@ ToughAsNailsU_autoupdate_temperature:
                     - define armor_add <[armor].get[add]>
 
                 - else if <[step].mod[7]> == 0:
-                    #- define biome <player.location.biome.name>
-                    - define biome_humidity <player.location.biome.humidity.round_to[3]>
-                    - define biome_temperature <player.location.temperature.round_to[3]>
+                    - define biome_humidity <player.location.biome.humidity.round_to[5]>
+
+                    #- define biome_temperature <player.location.temperature>
+                    - define biome_temperature <player.location.biome.base_temperature.round_to[5]>
+
                     - define sun <proc[toughasnailsu_true_sunlight].context[<player.location>]>
                     - define sun_final <[sun].sub[0.65].mul[11]>
-                    #- define time <proc[toughasnailsu_time_to_sin].context[<player.location.world.time>].round_to[3]>
-                   # - define time <player.location.light.sub[<player.location.light.blocks>].div[15]>
 
-                #- define altitude_impact <player.location.y.round.sub[62].mul[-0.05]>
-                - define altitude_impact 0
+                - define altitude_impact <player.location.y.round.sub[62].mul[-0.05]>
+                #- define altitude_impact 0
+
                 - define block_below_impact <[blocks_below_data].get[<player.location.below[0.6].material.name>].if_null[0]>
                 - define activity <player.is_sprinting.or[<player.swimming>].if_true[1].if_false[0]>
                 - define wet <proc[ToughAsNailsU_in_water].context[<player>].if_true[1].if_false[0]>
@@ -587,13 +589,9 @@ ToughAsNailsU_autoupdate_temperature:
                 - if <player.has_effect[fire_resistance]>:
                     - if <[result]> > 0:
                         - define result 0
-                #- define result <[blocks_around_impact].add[<[block_below_impact]>].mul[1].add[<[biome_temperature].sub[0.69].mul[35]>].add[<[altitude].sub[70].mul[-0.05]>].add[<[activity].mul[5]>].add[<[time].sub[0.7].mul[10]>].add[<[armor_add]>].add[<[weather].mul[-10]>].mul.add[<[food]>]]>
                 - define final_result <[result].mul[0.15]>
 
 
-
-                #- define stabilization false
-                #- flag <player> ToughAsNailsU.temperature_stabilization:!
                 - if <[result].abs> < 13:
                     - define temperature <player.flag[ToughAsNailsU.temperature]>
                     - flag <player> ToughAsNailsU.temperature_stabilization:true

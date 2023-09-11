@@ -388,7 +388,7 @@ ToughAsNailsU_green_sweet_berry_tea_bottle:
             type: shapeless
             recipe_id: toughasnailsu_green_sweet_berry_tea_bottle_1
             output_quantity: 1
-            input: material:firework_star|material:firework_star|material:firework_star|material:sweet_berries|ToughAsNailsU_boiling_water_bottle
+            input: material:firework_star|material:firework_star|material:sweet_berries|ToughAsNailsU_boiling_water_bottle
     display name: <reset><&translate[item.toughasnailsu.green_sweet_berry_tea_bottle]>
     lore:
         - <proc[ToughAsNailsU_food_lore].context[ToughAsNailsU_green_sweet_berry_tea_bottle]>
@@ -408,7 +408,7 @@ ToughAsNailsU_green_glow_berry_tea_bottle:
             type: shapeless
             recipe_id: toughasnailsu_green_glow_berry_tea_bottle_1
             output_quantity: 1
-            input: material:firework_star|material:firework_star|material:firework_star|material:glow_berries|ToughAsNailsU_boiling_water_bottle
+            input: material:firework_star|material:firework_star|material:glow_berries|ToughAsNailsU_boiling_water_bottle
     display name: <reset><&translate[item.toughasnailsu.green_glow_berry_tea_bottle]>
     lore:
         - <proc[ToughAsNailsU_food_lore].context[ToughAsNailsU_green_glow_berry_tea_bottle]>
@@ -425,7 +425,7 @@ ToughAsNailsU_green_sugar_tea_bottle:
             type: shapeless
             recipe_id: toughasnailsu_green_sugar_tea_bottle_1
             output_quantity: 1
-            input: material:firework_star|material:firework_star|material:firework_star|material:sugar|ToughAsNailsU_boiling_water_bottle
+            input: material:firework_star|material:firework_star|material:sugar|ToughAsNailsU_boiling_water_bottle
     display name: <reset><&translate[item.toughasnailsu.green_sugar_tea_bottle]>
     lore:
         - <proc[ToughAsNailsU_food_lore].context[ToughAsNailsU_green_sugar_tea_bottle]>
@@ -489,7 +489,7 @@ ToughAsNailsU_amethyst_water_bottle:
         1:
             type: shapeless
             output_quantity: 1
-            input: material:amethyst_shard|ToughAsNailsU_pure_water_bottle
+            input: material:amethyst_shard|material:amethyst_shard|ToughAsNailsU_pure_water_bottle
     display name: <reset><&translate[item.toughasnailsu.amethyst_water_bottle]>
     lore:
         - <proc[ToughAsNailsU_food_lore].context[ToughAsNailsU_amethyst_water_bottle]>
