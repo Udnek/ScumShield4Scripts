@@ -1,27 +1,25 @@
 BoatTrainU_bolting_item_data:
     type: data
     items:
-        oak_boat: boat[boat_type=GENERIC]
-        spruce_boat: boat[boat_type=REDWOOD]
-        birch_boat: boat[boat_type=BIRCH]
-        jungle_boat: boat[boat_type=JUNGLE]
-        acacia_boat: boat[boat_type=ACACIA]
-        dark_oak_boat: boat[boat_type=DARK_OAK]
-        # TODO FIX
-        mangrove_boat: boat[boat_type=GENERIC]
-        cherry_boat: boat[boat_type=GENERIC]
-        bamboo_raft: boat[boat_type=GENERIC]
+        oak_boat: boat[color=oak]
+        spruce_boat: boat[color=spruce]
+        birch_boat: boat[color=birch]
+        jungle_boat: boat[color=jungle]
+        acacia_boat: boat[color=acacia]
+        dark_oak_boat: boat[color=dark_oak]
+        mangrove_boat: boat[color=mangrove]
+        cherry_boat: boat[color=cherry]
+        bamboo_raft: boat[color=bamboo]
 
-        oak_chest_boat: chest_boat[boat_type=GENERIC]
-        spruce_chest_boat: chest_boat[boat_type=REDWOOD]
-        birch_chest_boat: chest_boat[boat_type=BIRCH]
-        jungle_chest_boat: chest_boat[boat_type=JUNGLE]
-        acacia_chest_boat: chest_boat[boat_type=ACACIA]
-        dark_oak_chest_boat: chest_boat[boat_type=DARK_OAK]
-        # TODO FIX
-        mangrove_chest_boat: chest_boat[boat_type=GENERIC]
-        cherry_chest_boat: chest_boat[boat_type=GENERIC]
-        bamboo_chest_raft: chest_boat[boat_type=GENERIC]
+        oak_chest_boat: chest_boat[color=oak]
+        spruce_chest_boat: chest_boat[color=spruce]
+        birch_chest_boat: chest_boat[color=birch]
+        jungle_chest_boat: chest_boat[color=jungle]
+        acacia_chest_boat: chest_boat[color=acacia]
+        dark_oak_chest_boat: chest_boat[color=ark_oak]
+        mangrove_chest_boat: chest_boat[color=mangrove]
+        cherry_chest_boat: chest_boat[color=cherry]
+        bamboo_chest_raft: chest_boat[color=bamboo]
 
 #---------------------
 

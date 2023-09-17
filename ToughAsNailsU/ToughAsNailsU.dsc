@@ -717,7 +717,8 @@ ToughAsNailsU_actions:
                 - give ToughAsNailsU_drinking_glass_bottle
 
         after player clicks block with:ToughAsNailsU_drinking_glass_bottle:
-            - define location <player.eye_location.ray_trace[range=3.5;fluids=true;entities=*;ignore=<player>]||null>
+            - define location <player.eye_location.ray_trace[range=3.5;fluids=true;entities=*;ignore=<player>].with_pose[<player>]||null>
+            # TODO FIXED
             - if <[location]> == null:
                 - stop
             - define item <proc[toughasnailsu_water_type].context[<[location]>]>

@@ -14,11 +14,11 @@ EnoughItemsU_recipe_replace_data:
     denizen:toughasnailsu_special_bone_meal_1:
         firework_star: ToughAsNailsU_oak_leaf
 
-EnoughItemsU_recipe_add_data:
-    type: data
-
-    enchanting_table:
-        - denizen:enchantingtablefixu_enchanting_table
+#EnoughItemsU_recipe_add_data:
+#    type: data
+#
+#    enchanting_table:
+#        - denizen:enchantingtablefixu_enchanting_table
 
 #-----------------------------------
 EnoughItemsU_get_all_craftable_items:
@@ -28,27 +28,47 @@ EnoughItemsU_get_all_craftable_items:
         - define vanilla <server.material_types.filter[is_item].exclude[<material[air]>].parse[name]>
         - define custom <util.scripts.filter[container_type.equals[ITEM]].parse[name]>
         - define result <list[]>
-        - foreach <[vanilla].include[<[custom]>]> as:item_name:
-            - if <item[<[item_name]>].proc[enoughitemsu_all_recipe_ids].size> > 0:
+
+        - foreach <[vanilla]> as:item_name:
+            - if <item[<[item_name]>].proc[enoughitemsu_all_recipe_ids].size> != 0:
                 - define result:->:<[item_name]>
+        - foreach <[custom]> as:item_name:
+            - if <item[<[item_name]>].proc[enoughitemsu_all_recipe_ids].size> != 0:
+                - if <item[<[item_name]>].script.exists>:
+                    - define result:->:<[item_name]>
         - determine <[result]>
 
 
-#TODO DO NOT WORK
-EnoughItemsU_get_translated_names:
+## PROC USES CONTEXT BECAUSE IT STATIC AND CACHES BEFORE RECIPES GENERATED
+EnoughItemsU_techincal_generate_added_crafts_to_vanilla_items:
     type: procedure
     debug: false
-    definitions: item_names_list
     script:
-        - define result <list[]>
-        - foreach <[item_names_list]> as:item_name:
-            - define item <item[<[item_name]>]>
-            - if <[item].has_display>:
-                - define result:->:<[item].display>
-            - else:
-                - define result:->:<[item].material.translated_name>
-        - determine <[result]>
+        - define recipe_ids <map[]>
+        - foreach <server.recipe_ids> as:recipe_id:
+            - if <[recipe_id]> matches denizen:*:
+                - define item <server.recipe_result[<[recipe_id]>]>
+                - if !<[item].script.exists>:
+                    - define recipe_ids.<[item].material.name>:->:<[recipe_id]>
+        - determine <[recipe_ids]>
 
+#EnoughItemsU_generate_added_crafts_to_vanilla_items:
+#    type: procedure
+#    debug: true
+#    definitions: salt
+#    script:
+#        - determine <static[<[salt].proc[EnoughItemsU_techincal_generate_added_crafts_to_vanilla_items]>]>
+
+EnoughItemsU_get_added_crafts_to_vanilla_items:
+    type: procedure
+    debug: false
+    definitions: item
+    script:
+        - define recipe_ids_added <proc[EnoughItemsU_techincal_generate_added_crafts_to_vanilla_items]>
+        - define item_name <[item].proc[utilsu_item_actual_name]>
+        - if <[recipe_ids_added]> contains <[item_name]>:
+            - determine <[recipe_ids_added].get[<[item_name]>]>
+        - determine <list[]>
 
 EnoughItemsU_all_recipe_ids:
     type: procedure
@@ -56,8 +76,8 @@ EnoughItemsU_all_recipe_ids:
     definitions: item
     script:
         - define recipe_ids <[item].recipe_ids>
-        - define recipe_ids_added <script[EnoughItemsU_recipe_add_data].data_key[<[item].script.name.if_null[<[item].material.name>]>].if_null[<list[]>]>
-        - determine <[recipe_ids].include[<[recipe_ids_added]>]>
+        - determine <[recipe_ids].include[<[item].proc[EnoughItemsU_get_added_crafts_to_vanilla_items]>]>
+
 #-----------------------------------
 EnoughItemsU_empty_item:
     type: item

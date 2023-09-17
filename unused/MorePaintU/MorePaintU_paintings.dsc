@@ -1,3 +1,12 @@
+
+MorePaintU_painting:
+    type: entity
+    debug: false
+    entity_type: item_display
+    mechanisms:
+        #translation: 0,-0.375,0.001
+        translation: 0,0,-0.001
+
 MorePainU_data:
     type: data
 
@@ -18,19 +27,7 @@ MorePainU_data:
         4x4:
             cmd: 10000001
 
-#---------------------
-
-MorePaintU_painting:
-    type: entity
-    debug: false
-    entity_type: item_display
-    mechanisms:
-        #translation: 0,-0.375,0.001
-        translation: 0,0,-0.001
-
-#---------------------
-
-MorePaintU_events:
+MorePaintU_paintings_events:
     type: world
     debug: false
     events:
@@ -44,6 +41,9 @@ MorePaintU_events:
         on hanging breaks:
             - if <context.hanging.proc[morepaintu_has_display_entity]>:
                 - remove <context.hanging.proc[morepaintu_get_display_entity]>
+
+
+
 
 MorePaintU_show_painting:
     type: task
