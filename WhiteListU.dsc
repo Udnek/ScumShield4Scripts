@@ -34,7 +34,7 @@ WhiteListU_is_in_whitelist:
     debug: false
     definitions: name
     script:
-        - if <yaml[whitelistu].contains[<[name]>]>:
+        - if <yaml[whitelistu].contains[<[name].to_lowercase>]>:
             - determine true
         - determine false
 
@@ -74,7 +74,7 @@ WhiteListU_add_to_whitelist:
         - if <[name].proc[whitelistu_is_in_whitelist]>:
             - announce "<gray>[WhiteListU] <red>ALREADY IN LIST!" to_console
             - stop
-        - yaml id:whitelistu set <[name]>
+        - yaml id:whitelistu set <[name].to_lowercase>
         - announce "<gray>[WhiteListU] Players: <green><proc[whitelistu_names].comma_separated>" to_console
         - run whitelistu_save_whitelist
 

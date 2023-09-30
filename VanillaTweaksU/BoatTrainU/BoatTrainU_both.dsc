@@ -55,5 +55,7 @@ BoatTrainU_gui_events:
     type: world
     debug: false
     events:
-        after player clicks item in BoatTrainU_items_gui:
-            - run EnoughItemsU_open_new_recipe_gui def:<context.item>|true|<context.inventory.script.name>
+        after player right clicks item in BoatTrainU_items_gui:
+            - run enoughitemsu_open_new_used_in_gui def:<context.item>|true|<context.inventory.script.name>
+        after player left clicks item in BoatTrainU_items_gui:
+            - run enoughitemsu_open_new_recipes_gui def:<context.item>|true|<context.inventory.script.name>

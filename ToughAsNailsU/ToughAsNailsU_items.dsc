@@ -114,15 +114,6 @@ ToughAsNailsU_nailer_enchantment:
     is_discoverable: false
     can_enchant: <context.item.advanced_matches[*_helmet|*_chestplate|*_leggings|*_boots]>
 
-#--------------------------------
-#ToughAsNailsU_water_bottle:
-#    debug: false
-#    type: item
-#    material: potion
-#    allow in material recipes: true
-#    no_id: true
-#    mechanisms:
-#        potion_effects: <list[<map[type=WATER;upgraded=false;extended=false]>]>
 #---------------------------
 ToughAsNailsU_special_bone_meal:
     debug: false
@@ -173,14 +164,6 @@ ToughAsNailsU_flask_colored:
             category: equipment
             input: material:*_dye|material:bundle
 #---------------------------
-#ToughAsNailsU_leaf:
-#    debug: false
-#    type: item
-#    material: paper
-#    display name: <reset><&translate[item.toughasnailsu.leaf]>
-#    mechanisms:
-#        custom_model_data: 1000
-
 ToughAsNailsU_acacia_leaf:
     debug: false
     type: item

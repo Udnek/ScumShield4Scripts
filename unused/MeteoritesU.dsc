@@ -90,13 +90,13 @@ MeteoritesU_spawn_meteorite_command:
 DisasterU_spawn_tornado:
     type: task
     debug: false
-    definitions: __player
+    #definitions: __player
     script:
         - define spawn_loc <player.cursor_on>
         - debugblock <[spawn_loc]>
         - foreach <[spawn_loc].to_ellipsoid[4,2,4].blocks[!air]> as:block_loc:
             #- if <[block_loc].material.name> != air:
-            - push falling_block[fallingblock_type=<[block_loc].material>] origin:<[spawn_loc].center> destination:<[block_loc].center.above[20].random_offset[2,0,2]> speed:2
+            - push falling_block[fallingblock_type=<[block_loc].material>] origin:<[spawn_loc].center.above[2]> destination:<[block_loc].center.above[20].random_offset[2]> speed:2
             - modifyblock <[block_loc]> air
         #- repeat 20 as:time:
             - repeat 70 as:i:
@@ -104,3 +104,14 @@ DisasterU_spawn_tornado:
                 - define pos <[loc].points_around_y[radius=<[i].div[10]>;points=<[i].div[2].add[5].round_up>]>
                 - playeffect effect:cloud at:<[pos]> visibility:100 velocity:0,0,0
             - wait 10t
+
+#DisasterU_events:
+#    type: world
+#    events:
+#        after block falls:
+#            - announce ok
+#        on falling_block drops item:
+#            - if <context.location.material.name> !matches kelp|kelp_plant:
+#                - stop
+#            - announce <context.dropped_by.fallingblock_drop_item>
+#            - modifyblock <context.location> <context.dropped_by>

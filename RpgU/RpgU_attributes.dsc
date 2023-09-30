@@ -144,8 +144,10 @@ RpgU_generate_attributes:
                             - define amount <util.random.decimal[-0.6].to[0.7].mul[<[level]>].round>
                         - case trident:
                             - define amount <util.random.decimal[-0.6].to[0.9].mul[<[level]>].round>
+                        - case tool:
+                            - define amount <util.random.decimal[-0.01].to[0.01].mul[<[level]>].round>
 
-                        # armor and tool
+                        # armor
                         - default:
                             - define amount <util.random.decimal[-0.01].to[0.01].mul[<[level]>].round_to[2]>
                             - define operation ADD_SCALAR
@@ -153,7 +155,7 @@ RpgU_generate_attributes:
                 - case generic_attack_speed:
                     - choose <[item_type]>:
                         - case sword:
-                            - define amount <util.random.decimal[-0.05].to[0.06].mul[<[level]>].round_to[2]>
+                            - define amount <util.random.decimal[-0.035].to[0.045].mul[<[level]>].round_to[2]>
                         - case axe:
                             - define amount <util.random.decimal[-0.03].to[0.04].mul[<[level]>].round_to[2]>
                         - case trident:
@@ -165,7 +167,7 @@ RpgU_generate_attributes:
 
                 - case generic_movement_speed:
                     - if <[item_type]> == sword:
-                        - define amount <util.random.decimal[-0.1].to[0.1].mul[<[level]>].round_to[2]>
+                        - define amount <util.random.decimal[-0.02].to[0.02].mul[<[level]>].round_to[2]>
                     - else:
                         - define amount <util.random.decimal[-0.015].to[0.02].mul[<[level]>].round_to[2]>
                     - define operation ADD_SCALAR

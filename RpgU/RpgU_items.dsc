@@ -54,31 +54,6 @@ RpgU_smithing_events:
     type: world
     debug: false
     events:
-        #on player prepares smithing item:
-        #    - define template <context.inventory.list_contents.get[1].if_null[<item[air]>]>
-        #    - define main_item <context.inventory.list_contents.get[2].if_null[<item[air]>]>
-        #    - define material <context.inventory.list_contents.get[3].if_null[<item[air]>]>
-#
-        #    - if <[template]>|<[main_item]>|<[material]> contains <item[air]>:
-        #        - determine <item[air]>
-#
-        #    #- narrate "<&color[<util.random.int[0].to[255]>,<util.random.int[0].to[255]>,<util.random.int[0].to[255]>]><[template]> <[main_item]> <[material]>"
-#
-        #    - if <[template].proc[utilsu_item_actual_name]> != RpgU_upgrade_stone:
-        #        - if ( <[main_item].proc[rpgu_item_type]> == armor ) or ( <[main_item].material.name.advanced_matches[diamond_*]> and <[template].proc[utilsu_item_actual_name]> == netherite_upgrade_smithing_template ):
-        #            - stop
-        #        - else:
-        #            - determine <item[air]>
-#
-        #    - if <[material].proc[utilsu_item_actual_name]> != copper_ingot:
-        #        - determine <item[air]>
-#
-        #    - if !<[main_item].proc[rpgu_can_apply_stone].context[<[template]>]>:
-        #        - determine <item[air]>
-#
-        #    - determine <[main_item].proc[rpgu_apply_upgrade_stone].context[<[template]>]>
-
-
         on player prepares smithing RpgU_upgrade_stone_technical_craft:
             - define template <context.inventory.list_contents.get[1].if_null[<item[air]>]>
             - define main_item <context.inventory.list_contents.get[2].if_null[<item[air]>]>

@@ -115,6 +115,7 @@ BoatTrainU_strong_boat_events:
 
 
         on player quits:
+            - ratelimit <player> 1t
             - if <player.is_inside_vehicle>:
                 - if <player.vehicle.proc[utilsu_entity_actual_name]> == BoatTrainU_strong_boat_seat_entity:
                     - mount cancel <player>

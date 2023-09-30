@@ -21,50 +21,46 @@ EnoughItemsU_recipe_replace_data:
 #        - denizen:enchantingtablefixu_enchanting_table
 
 #-----------------------------------
-EnoughItemsU_get_all_craftable_items:
+EnoughItemsU_get_all_items:
     type: procedure
     debug: false
     script:
         - define vanilla <server.material_types.filter[is_item].exclude[<material[air]>].parse[name]>
         - define custom <util.scripts.filter[container_type.equals[ITEM]].parse[name]>
-        - define result <list[]>
-
-        - foreach <[vanilla]> as:item_name:
-            - if <item[<[item_name]>].proc[enoughitemsu_all_recipe_ids].size> != 0:
-                - define result:->:<[item_name]>
-        - foreach <[custom]> as:item_name:
-            - if <item[<[item_name]>].proc[enoughitemsu_all_recipe_ids].size> != 0:
-                - if <item[<[item_name]>].script.exists>:
-                    - define result:->:<[item_name]>
-        - determine <[result]>
+        - determine <[vanilla].include[<[custom]>]>
+        #- define result <list[]>
+#
+        #- foreach <[vanilla]> as:item_name:
+        #    - if <item[<[item_name]>].proc[enoughitemsu_all_recipe_ids].size> != 0:
+        #        - define result:->:<[item_name]>
+        #- foreach <[custom]> as:item_name:
+        #    - if <item[<[item_name]>].proc[enoughitemsu_all_recipe_ids].size> != 0:
+        #        - if <item[<[item_name]>].script.exists>:
+        #            - define result:->:<[item_name]>
+        #- determine <[result]>
 
 
 ## PROC USES CONTEXT BECAUSE IT STATIC AND CACHES BEFORE RECIPES GENERATED
-EnoughItemsU_techincal_generate_added_crafts_to_vanilla_items:
-    type: procedure
+# TODO BETTER FIX?
+
+EnoughItemsU_generate_added_crafts_to_vanilla_items:
+    type: task
     debug: false
     script:
         - define recipe_ids <map[]>
-        - foreach <server.recipe_ids> as:recipe_id:
-            - if <[recipe_id]> matches denizen:*:
-                - define item <server.recipe_result[<[recipe_id]>]>
-                - if !<[item].script.exists>:
-                    - define recipe_ids.<[item].material.name>:->:<[recipe_id]>
-        - determine <[recipe_ids]>
-
-#EnoughItemsU_generate_added_crafts_to_vanilla_items:
-#    type: procedure
-#    debug: true
-#    definitions: salt
-#    script:
-#        - determine <static[<[salt].proc[EnoughItemsU_techincal_generate_added_crafts_to_vanilla_items]>]>
+        - foreach <server.recipe_ids.filter[starts_with[denizen:]]> as:recipe_id:
+            - define item <server.recipe_result[<[recipe_id]>]>
+            - if !<[item].script.exists>:
+                - define recipe_ids.<[item].material.name>:->:<[recipe_id]>
+        - flag server EnoughItemsU_added_crafts_to_vanilla_items:<[recipe_ids]>
+        #- determine <[recipe_ids]>
 
 EnoughItemsU_get_added_crafts_to_vanilla_items:
     type: procedure
     debug: false
     definitions: item
     script:
-        - define recipe_ids_added <proc[EnoughItemsU_techincal_generate_added_crafts_to_vanilla_items]>
+        - define recipe_ids_added <server.flag[EnoughItemsU_added_crafts_to_vanilla_items]>
         - define item_name <[item].proc[utilsu_item_actual_name]>
         - if <[recipe_ids_added]> contains <[item_name]>:
             - determine <[recipe_ids_added].get[<[item_name]>]>
@@ -77,6 +73,19 @@ EnoughItemsU_all_recipe_ids:
     script:
         - define recipe_ids <[item].recipe_ids>
         - determine <[recipe_ids].include[<[item].proc[EnoughItemsU_get_added_crafts_to_vanilla_items]>]>
+
+
+EnoughItemsU_used_in_recipe_ids:
+    type: procedure
+    debug: false
+    definitions: item
+    script:
+        - define recipe_ids <list[]>
+        - define item_name <[item].proc[utilsu_item_actual_name]>
+        - foreach <server.recipe_ids> as:recipe_id:
+            - if <server.recipe_items[<[recipe_id]>].parse_tag[<[parse_value].contains[material:].if_true[<[parse_value].replace_text[material:].with[]>].if_false[<[parse_value].proc[utilsu_item_actual_name]>]>]> contains <[item_name]>:
+                - define recipe_ids:->:<[recipe_id]>
+        - determine <[recipe_ids]>
 
 #-----------------------------------
 EnoughItemsU_empty_item:
@@ -133,24 +142,43 @@ EnoughItemsU_recipe_gui:
     - [] [] [] [] [] [] [] [] []
 
 #-------------------------------
-EnoughItemsU_open_new_recipe_gui:
+EnoughItemsU_open_new_recipes_gui:
     type: task
     debug: false
     definitions: item|has_inv|inv
     script:
-        - if ( <[item].material.name> != air ) && ( <[item].proc[enoughitemsu_all_recipe_ids].size> > 0 ):
-            - if <[has_inv]>:
-                - run EnoughItemsU_open_recipe_gui def:<player>|<[item]>|1|false|<[inv]>
-            - else:
-                - run EnoughItemsU_open_recipe_gui def:<player>|<[item]>|1|false|false
+        - if <[item].material.name> == air:
+            - stop
+        - define recipes <[item].proc[enoughitemsu_all_recipe_ids]>
+        - if <[recipes].is_empty>:
+            - stop
+        - if <[has_inv]>:
+            - run EnoughItemsU_open_recipes_gui def.recipes:<[recipes]> def.recipe_number:1 def.back_recipes:false def.back_inventory:<[inv]>
+        - else:
+            - run EnoughItemsU_open_recipes_gui def.recipes:<[recipes]> def.recipe_number:1 def.back_recipes:false def.back_inventory:false
 
-EnoughItemsU_open_recipe_gui:
+EnoughItemsU_open_new_used_in_gui:
     type: task
     debug: false
-    definitions: __player|item|recipe_number|back_item|back_inventory
+    definitions: item|has_inv|inv
     script:
-        - define genertor_result <proc[EnoughItemsU_recipe_generator].context[<[item]>|<[recipe_number]>]>
-        - define recipe <[genertor_result].get[gui]>
+        - if <[item].material.name> == air:
+            - stop
+        - define recipes <[item].proc[enoughitemsu_used_in_recipe_ids]>
+        - if <[recipes].is_empty>:
+            - stop
+        - if <[has_inv]>:
+            - run EnoughItemsU_open_recipes_gui def.recipes:<[recipes]> def.recipe_number:1 def.back_recipes:false def.back_inventory:<[inv]>
+        - else:
+            - run EnoughItemsU_open_recipes_gui def.recipes:<[recipes]> def.recipe_number:1 def.back_recipes:false def.back_inventory:false
+
+EnoughItemsU_open_recipes_gui:
+    type: task
+    debug: false
+    definitions: recipes|recipe_number|back_recipes|back_inventory
+    script:
+        - define genertor_result <proc[EnoughItemsU_recipe_generator].context[<[recipes].get[<[recipe_number]>]>]>
+        - define recipe_gui <[genertor_result].get[gui]>
         - define gui <inventory[EnoughItemsU_recipe_gui]>
         - define offset_x 2
         - define offset_y 2
@@ -158,15 +186,15 @@ EnoughItemsU_open_recipe_gui:
 
         - repeat 3 from:0 as:y:
             - repeat 3 from:1 as:x:
-                - inventory set o:<[recipe].get[<[y].mul[3].add[<[x]>]>]> slot:<[y].add[<[offset_y]>].mul[9].add[<[x]>].add[<[offset_x]>]> destination:<[gui]>
+                - inventory set o:<[recipe_gui].get[<[y].mul[3].add[<[x]>]>]> slot:<[y].add[<[offset_y]>].mul[9].add[<[x]>].add[<[offset_x]>]> destination:<[gui]>
 
         - inventory set o:<[genertor_result].get[result]> slot:34 destination:<[gui]>
-        - inventory set o:<[genertor_result].get[block_icon]> slot:5 destination:<[gui]>
+        - inventory set o:<[genertor_result].get[block_icon].with_flag[recipes:<[recipes]>]> slot:5 destination:<[gui]>
         - inventory set o:<[genertor_result].get[gui_icon]> slot:13 destination:<[gui]>
 
-        - if <[back_item]> != false:
+        - if <[back_recipes]> != false:
             - define back <item[enoughitemsu_recipe_back]>
-            - flag <[back]> item:<[back_item].script.name.if_null[<[back_item].material.name>]>
+            - flag <[back]> recipes:<[back_recipes]>
             - inventory set o:<[back]> slot:1 destination:<[gui]>
 
         - else if <[back_inventory]> != false:
@@ -174,16 +202,14 @@ EnoughItemsU_open_recipe_gui:
             - flag <[back]> inventory:<[back_inventory]>
             - inventory set o:<[back]> slot:1 destination:<[gui]>
 
-        - if <[genertor_result].get[recipes_amount]> > <[recipe_number]>:
+        - if <[recipe_number]> < <[recipes].size>:
             - define arrow_right <item[EnoughItemsU_recipe_arrow_right]>
             - flag <[arrow_right]> recipe_number:<[recipe_number].add[1]>
-            #- adjust def:arrow_right display:<[recipe_number].add[1]>
             - inventory set o:<[arrow_right]> slot:36 destination:<[gui]>
 
         - if <[recipe_number]> > 1:
             - define arrow_left <item[EnoughItemsU_recipe_arrow_left]>
             - flag <[arrow_left]> recipe_number:<[recipe_number].add[-1]>
-            #- adjust def:arrow_left display:<[recipe_number].add[-1]>
             - inventory set o:<[arrow_left]> slot:28 destination:<[gui]>
 
         - inventory open destination:<[gui]>
@@ -192,16 +218,10 @@ EnoughItemsU_open_recipe_gui:
 EnoughItemsU_recipe_generator:
     type: procedure
     debug: false
-    definitions: item_result|recipe_number
+    definitions: recipe_id
     script:
         - define gui <item[air].repeat_as_list[9]>
-        - define recipe_ids <[item_result].proc[enoughitemsu_all_recipe_ids]>
-        #- define recipe_ids <[item_result].recipe_ids>
-        #- define recipe_ids_added <script[EnoughItemsU_recipe_add_data].data_key[<[item_result].script.name.if_null[<[item_result].material>]>]>
-        #- if <[recipe_ids_added]> != null:
-        #    - define recipe_ids:->:recipe_ids_added
-        #- define recipe_ids <[item_result].recipe_ids>
-        - define recipe_id <[recipe_ids].get[<[recipe_number]>]>
+
         - define recipe_type <server.recipe_type[<[recipe_id]>]>
         - define gui_icon <item[EnoughItemsU_empty_item]>
         - choose <[recipe_type]>:
@@ -283,9 +303,6 @@ EnoughItemsU_recipe_generator:
                     - define item <item[<[item].replace_text[material:].with[]>]>
                 - define gui[5]:<[item]>
 
-                #- define fire_icon:<item[EnoughItemsU_empty_item]>
-                #- adjust def:fire_icon custom_model_data:1100
-                #- define gui[5]:<item[EnoughItemsU_fire_icon]>
                 - define block_icon <item[stonecutter]>
 
                 - adjust def:gui_icon custom_model_data:1003
@@ -299,59 +316,58 @@ EnoughItemsU_recipe_generator:
             - foreach <[replace_recipe_items].keys> as:i:
                 - define gui <[gui].replace[<item[<[i]>]>].with[<item[<[replace_recipe_items].get[<[i]>]>]>]>
 
-        - determine <map[gui=<[gui]>;result=<server.recipe_result[<[recipe_id]>]>;block_icon=<[block_icon]>;gui_icon=<[gui_icon]>;recipes_amount=<[recipe_ids].size>]>
-
-                    #- case SMITHING:
-                    #    - define recipe:<server.recipe_items[<[recipe_id]>]>
-                    #    - narrate <[recipe]>
-                        #- define item:<[recipe].get[1]>
-                    #- case BLASTING:
-                    #    - define recipe:<server.recipe_items[<[recipe_id]>]>
-                    #    - define item:<[recipe].get[1]>
-                    #    - if <[item].contains[material:]>:
-                    #        - define item:<item[<[item].replace_text[material:].with[]>]>
-                    #    - inventory set o:<[item]> slot:1 destination:<[gui]>
-                    #- case SMOKING:
-                    #- case CAMPFIRE:
-                    #- case STONECUTTING:
-                    #- case SMITHING:
-                    #- case BREWING:
-                    #    - define recipe:<server.recipe_items[<[recipe_id]>]>
-                    #    - narrate <[recipe]>
-                #- narrate <server.recipe_type[<[recipe_id]>]>
-                #- narrate <server.recipe_shape[<[recipe_id]>]>
-
-        #- inventory open d:<[gui]>
+        - determine <map[gui=<[gui]>;result=<server.recipe_result[<[recipe_id]>]>;block_icon=<[block_icon]>;gui_icon=<[gui_icon]>]>
 
 #-------------------------------
-EnoughItemsU_gui_actions:
+EnoughItemsU_gui_events:
     type: world
     debug: false
     events:
+        on player clicks item in EnoughItemsU_recipe_gui:
+            - determine cancelled
 
-        after player clicks item in EnoughItemsU_recipe_gui:
-            - if ( <context.item.material.name> != air ) && ( <context.item.recipe_ids.size> > 0 ) && ( <context.inventory.list_contents.get[34]> != <context.item> ):
-                - run EnoughItemsU_open_recipe_gui def:<player>|<context.item>|1|<context.inventory.list_contents.get[34]>|false
+        after player left clicks item in EnoughItemsU_recipe_gui cancelled:true:
+            - define recipes <context.item.proc[enoughitemsu_all_recipe_ids]>
+            - if ( <context.item.material.name> != air ) && ( !<[recipes].is_empty> ):
+                - run EnoughItemsU_open_recipes_gui def.recipes:<[recipes]> def.recipe_number:1 def.back_recipes:<player.open_inventory.slot[5].flag[recipes]> def.back_inventory:false
 
-        after player clicks EnoughItemsU_recipe_arrow_* in EnoughItemsU_recipe_gui:
+        after player right clicks item in EnoughItemsU_recipe_gui cancelled:true:
+            - define recipes <context.item.proc[enoughitemsu_used_in_recipe_ids]>
+            - if ( <context.item.material.name> != air ) && ( !<[recipes].is_empty> ):
+                - run EnoughItemsU_open_recipes_gui def.recipes:<[recipes]> def.recipe_number:1 def.back_recipes:<player.open_inventory.slot[5].flag[recipes]> def.back_inventory:false
+                #- run EnoughItemsU_open_new_recipes_gui def:<context.item>|false|false
+                #- run EnoughItemsU_open_recipes_gui def.recipes:<context.item.proc[enoughitemsu_all_recipe_ids]> def.recipe_number:1 def.back_recipes:false def.back_inventory:false
+                #- run enoughitemsu_open_new__gui def:<context.item>|1|<context.inventory.list_contents.get[34]>|false
+
+        after player clicks EnoughItemsU_recipe_arrow_* in EnoughItemsU_recipe_gui cancelled:true:
             - define list_contents <context.inventory.list_contents>
-            - if <[list_contents].get[1].has_flag[item]>:
-                - define back_item <item[<[list_contents].get[1].flag[item]>]>
+            - if <context.inventory.slot[1].has_flag[recipes]>:
+                - define back_recipes <context.inventory.slot[1].flag[recipes]>
             - else:
-                - define back_item false
+                - define back_recipes false
 
-            - if <[list_contents].get[1].has_flag[inventory]>:
-                - define back_inventory <[list_contents].get[1].flag[inventory]>
+            - if <context.inventory.slot[1].has_flag[inventory]>:
+                - define back_inventory <context.inventory.slot[1].flag[inventory]>
             - else:
                 - define back_inventory false
 
-            - run EnoughItemsU_open_recipe_gui def:<player>|<[list_contents].get[34]>|<context.item.flag[recipe_number].if_null[1]>|<[back_item]>|<[back_inventory]>
+            - run EnoughItemsU_open_recipes_gui def.recipes:<player.open_inventory.slot[5].flag[recipes]> def.recipe_number:<context.item.flag[recipe_number].if_null[1]> def.back_recipes:<[back_recipes]> def.back_inventory:<[back_inventory]>
+            #- run EnoughItemsU_open_recipe_gui def:<[list_contents].get[34]>|<context.item.flag[recipe_number].if_null[1]>|<[back_item]>|<[back_inventory]>
 
-        after player clicks EnoughItemsU_recipe_back in EnoughItemsU_recipe_gui:
-            - if <context.item.has_flag[item]>:
-                - run EnoughItemsU_open_recipe_gui def:<player>|<item[<context.item.flag[item]>]>|1|<context.inventory.list_contents.get[34]>|false
+        after player clicks EnoughItemsU_recipe_back in EnoughItemsU_recipe_gui cancelled:true:
+            - if <context.item.has_flag[recipes]>:
+                - run EnoughItemsU_open_recipes_gui def.recipes:<context.item.flag[recipes]> def.recipe_number:1 def.back_recipes:false def.back_inventory:false
+                #- run EnoughItemsU_open_recipe_gui def:<item[<context.item.flag[item]>]>|1|<context.inventory.list_contents.get[34]>|false
             - else:
                 - inventory open destination:<context.item.flag[inventory]>
+
+EnoughItemsU_reload_events:
+    type: world
+    events:
+        after server resources reloaded:
+            - run enoughitemsu_generate_added_crafts_to_vanilla_items
+        after reload scripts:
+            - run enoughitemsu_generate_added_crafts_to_vanilla_items
 
 #-------------------------------
 EnoughItemsU_recipe_command:
@@ -361,12 +377,25 @@ EnoughItemsU_recipe_command:
     description: recipe
     usage: /recipe
     tab completions:
-        1: <static[<proc[enoughitemsu_get_all_craftable_items]>]>
+        1: <static[<proc[enoughitemsu_get_all_items]>]>
     script:
         - if <context.args.first.if_null[null]> != null:
             - if <item[<context.args.first>].if_null[null]> != null:
-                - run EnoughItemsU_open_new_recipe_gui def:<item[<context.args.first>]>|false|false
+                - run EnoughItemsU_open_new_recipes_gui def:<item[<context.args.first>]>|false|false
                 - stop
-        - run EnoughItemsU_open_new_recipe_gui def:<player.item_in_hand>|false|false
+        - run EnoughItemsU_open_new_recipes_gui def:<player.item_in_hand>|false|false
 
-
+EnoughItemsU_recipe_usages_command:
+    type: command
+    debug: false
+    name: recipe_usages
+    description: recipe_usages
+    usage: /recipe_usages
+    tab completions:
+        1: <static[<proc[enoughitemsu_get_all_items]>]>
+    script:
+        - if <context.args.first.if_null[null]> != null:
+            - if <item[<context.args.first>].if_null[null]> != null:
+                - run enoughitemsu_open_new_used_in_gui def:<item[<context.args.first>]>|false|false
+                - stop
+        - run enoughitemsu_open_new_used_in_gui def:<player.item_in_hand>|false|false

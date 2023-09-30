@@ -205,17 +205,20 @@ RpgU_generate_equipment_for_mob:
     script:
         - define loc <[entity].location>
         - if <[loc].world.environment> == NORMAL:
-            - define altitude_mul <element[1].sub[<[loc].y.add[64].div[<static[<[loc].world.max_height.add[64]>]>]>].round_to[2].add[0.4]>
-            - define altitude_mul:*:<[altitude_mul]>
+            #- define altitude_mul <element[1].sub[<[loc].y.add[64].div[<[loc].world.max_height.add[64]>]>].round_to[2].add[0.4]>
+            #- define altitude_mul:*:<[altitude_mul]>
+            - define altitude_mul <element[1].sub[<[loc].y.add[64].div[<[loc].world.max_height.add[64]>]>].round_to[5].mul[2.5]>
         - else:
             - define altitude_mul 1
 
-        - define local_diff_mul <[loc].local_difficulty.div[1.5].round_to[2]>
+        #- define local_diff_mul <[loc].local_difficulty.div[1.5].round_to[2]>
         - define mob_data <script[rpgu_equipable_mobs_data].data_key[mobs.<[entity].entity_type>]>
         - define mob_diff_mul <[mob_data].get[level_mul]>
         - define mob_type <[mob_data].get[type]>
 
-        - define level <[altitude_mul].mul[<[local_diff_mul]>].mul[<[mob_diff_mul]>]>
+        - define level <[altitude_mul].mul[<[mob_diff_mul]>]>
+        #- announce lvl:<[level]>
+        #- announce alt_mul:<[altitude_mul]>
 
         - define armor <list[]>
         - foreach <[entity].equipment> as:item:
@@ -234,11 +237,13 @@ RpgU_generate_equipment_for_mob:
 
         - if <[entity].item_in_hand.material.name> == air:
             - define weapon <item[<[mob_type].proc[rpgu_choose_random_weapon]>]>
-            - if <[weapon].proc[rpgu_can_have_upgrades]>:
-                - define item_type <[weapon].proc[rpgu_item_type]>
-                - define weapon <[weapon].proc[rpgu_generate_attributes].context[<[item_type]>|<[level]>|NULL|HAND]>
         - else:
             - define weapon <[entity].item_in_hand>
+
+
+        - if <[weapon].proc[rpgu_can_have_upgrades]>:
+            - define item_type <[weapon].proc[rpgu_item_type]>
+            - define weapon <[weapon].proc[rpgu_generate_attributes].context[<[item_type]>|<[level]>|NULL|HAND]>
 
         - determine <map[armor=<[armor]>;weapon=<[weapon]>]>
 
@@ -261,7 +266,12 @@ RpgU_spawn_events:
             - adjust <player> attribute_base_values:<map[generic_max_health=10]>
 
         on entity picks up item:
-            - if <context.pickup_entity.proc[rpgu_is_equippable]>:
+            - if !<context.pickup_entity.proc[rpgu_is_equippable]>:
+                - stop
+            - if <context.pickup_entity.entity_type> != PIGLIN:
+                - determine cancelled
+
+            - if <server.vanilla_tagged_materials[piglin_loved]> !contains <context.item.material>:
                 - determine cancelled
 
         on entity spawns:

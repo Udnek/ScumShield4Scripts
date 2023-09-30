@@ -58,10 +58,10 @@ ToughAsNailsU_armor_data:
         iron_leggings: 1.1
         iron_boots: 1.1
 
-        diamond_helmet: 1.2
-        diamond_chestplate: 1.2
-        diamond_leggings: 1.2
-        diamond_boots: 1.12
+        diamond_helmet: 1.15
+        diamond_chestplate: 1.15
+        diamond_leggings: 1.15
+        diamond_boots: 1.15
 
         netherite_helmet: 1
         netherite_chestplate: 1
@@ -586,28 +586,34 @@ ToughAsNailsU_autoupdate_temperature:
                 - define add_impact <[blocks_around_impact].add[<[block_below_impact]>].add[<[biome_temperature].sub[0.69].mul[38]>].add[<[altitude_impact]>].add[<[activity].mul[5]>].add[<[sun_final]>].add[<[armor_add]>].add[<[weather].mul[-10]>].add[<[wet].mul[-45]>]>
                 - define mull_impact <[biome_humidity].add[0.8].mul[<[armor_mul]>]>
                 - define result <[add_impact].mul[<[mull_impact]>].add[<[food]>]>
-                - if <player.has_effect[fire_resistance]>:
-                    - if <[result]> > 0:
-                        - define result 0
+
                 - define final_result <[result].mul[0.15]>
 
+                ## FIRE RESISTANCE
+                - if <player.has_effect[fire_resistance]>:
+                    - if <[result]> > 0:
+                        - define final_result 0
 
+
+                ## NATURAL RESTORE
                 - if <[result].abs> < 13:
                     - define temperature <player.flag[ToughAsNailsU.temperature]>
                     - flag <player> ToughAsNailsU.temperature_stabilization:true
-                    - if <[temperature].abs> < 2:
+                    - if <[temperature].abs> < 6:
                         - define final_result <[temperature].mul[-1]>
                     - else:
-                        - define final_result <[temperature].is_less_than[0].if_true[2].if_false[-2]>
+                        - define final_result <[temperature].is_less_than[0].if_true[6].if_false[-6]>
+
                 - else:
+                    ## ADOPTATION
                     - flag <player> ToughAsNailsU.temperature_stabilization:!
 
-                - if <[result]> > 0:
-                    - flag <player> ToughAsNailsU.temperature_grows:true
-                - else:
-                    - flag <player> ToughAsNailsU.temperature_grows:!
+                    - define temperature <player.flag[ToughAsNailsU.temperature]>
+                    - if ( <[temperature]> > 0 && <[result]> > 0 ) || ( <[temperature]> < 0 && <[result]> < 0 ):
+                        - define final_result:*:0.5
 
 
+                ## APPLYING
 
                 - define old_temperature <player.flag[ToughAsNailsU.temperature]>
                 - run ToughAsNailsU_adjust_temperature def:<[final_result]>
@@ -627,6 +633,13 @@ ToughAsNailsU_autoupdate_temperature:
                 - else:
                     - if <[final_result]> > 0:
                         - run toughasnailsu_remove_anabiosis
+
+
+                - if <[result]> > 0:
+                    - flag <player> ToughAsNailsU.temperature_grows:true
+                - else:
+                    - flag <player> ToughAsNailsU.temperature_grows:!
+
 
                 - if <server.has_flag[ToughAsNailsU.debug]>:
                     - define string "<green>temp:<player.flag[ToughAsNailsU.temperature]><white>|step:<[step]>|b_around:<[blocks_around_impact]> b_below:<[block_below_impact]>|biome:<player.location.biome.name> <yellow>hum:<[biome_humidity]> <green>temp:<[biome_temperature]><white>|altitude:<[altitude_impact]>|sun:<[sun]> sun_final:<[sun_final]>|activity:<[activity]>|wet:<[wet]>|food:<[food]> expire:<player.flag_expiration[ToughAsNailsU.food_temperature].from_now.formatted.if_null[0]>|weather:<[weather]>|armor_mul:<[armor_mul]>  armor_add:<[armor_add]>|result:<[result]>|<red>final_result:<[final_result]>"
@@ -717,11 +730,10 @@ ToughAsNailsU_actions:
                 - give ToughAsNailsU_drinking_glass_bottle
 
         after player clicks block with:ToughAsNailsU_drinking_glass_bottle:
-            - define location <player.eye_location.ray_trace[range=3.5;fluids=true;entities=*;ignore=<player>].with_pose[<player>]||null>
-            # TODO FIXED
+            - define location <player.eye_location.ray_trace[range=3.5;fluids=true;entities=*;ignore=<player>]||null>
             - if <[location]> == null:
                 - stop
-            - define item <proc[toughasnailsu_water_type].context[<[location]>]>
+            - define item <proc[toughasnailsu_water_type].context[<[location].with_pose[<player>].forward[0.01]>]>
             - if <[item]> == null:
                 - stop
             - take slot:<player.held_item_slot> quantity:1
@@ -894,27 +906,15 @@ ToughAsNailsU_crafting_actions:
         #            - repeat stop
         #    - determine RESULT:<context.result.with[lore=<[lore]>]>
 
-        #after player drops item_flagged:ToughAsNailsU_to_beer:
-        #    - wait 2m
-        #    - if <context.entity.is_spawned>:
-        #        - if <context.entity.location.light> <= 5:
-        #            - define item:<item[<context.item.flag[ToughAsNailsU_to_beer]>]>
-        #            #- adjust def:item quantity:<context.entity.item.quantity>
-        #            - drop <[item]> <context.entity.location> speed:0 quantity:<context.entity.item.quantity>
-        #            - remove <context.entity>
-        #            - playeffect spit <context.entity.location> quantity:4 velocity:0,0.2,0
-        #            - playsound <context.entity.location> BLOCK_FIRE_EXTINGUISH volume:0.15
-        #        - else:
-        #            - playeffect spit <context.entity.location> quantity:4 velocity:0,0.2,0
-        #            - playsound <context.entity.location> BLOCK_FIRE_EXTINGUISH volume:0.15
-
 
 ToughAsNailsU_recipes_gui_actions:
     type: world
     debug: false
     events:
-        after player clicks item in ToughAsNailsU_recipes_gui:
-            - run EnoughItemsU_open_new_recipe_gui def:<context.item>|true|<context.inventory.script.name>
+        after player right clicks item in BoatTrainU_items_gui:
+            - run enoughitemsu_open_new_used_in_gui def:<context.item>|true|<context.inventory.script.name>
+        after player left clicks item in BoatTrainU_items_gui:
+            - run enoughitemsu_open_new_recipes_gui def:<context.item>|true|<context.inventory.script.name>
 
 #------------------------
 ToughAsNailsU_flask_put_in:
