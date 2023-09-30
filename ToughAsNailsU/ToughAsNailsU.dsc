@@ -754,14 +754,15 @@ ToughAsNailsU_actions:
         after leaves decay:
             - if <util.random_chance[7]>:
                 - drop <proc[toughasnailsu_leaf_type].context[<context.location>|<context.material.name>]> <context.location> quantity:1
-                #- drop ToughAsNailsU_leaf <context.location> quantity:
         after player breaks *leaves:
             - if <context.material.persistent>:
                 - stop
-            #- narrate <player.item_in_hand.enchantment_map.get[fortune].if_null[0].add[1].mul[7]>
             - if <util.random_chance[<player.item_in_hand.enchantment_map.get[fortune].if_null[0].add[1].mul[7]>]>:
                 - drop <proc[toughasnailsu_leaf_type].context[<context.location>|<context.material.name>]> <context.location> quantity:1
 
+        on feather spawns:
+            - if <context.item.has_flag[item]>:
+                - determine cancelled
 
 ToughAsNailsU_anabiosis_actions:
     type: world
@@ -911,9 +912,9 @@ ToughAsNailsU_recipes_gui_actions:
     type: world
     debug: false
     events:
-        after player right clicks item in BoatTrainU_items_gui:
+        after player right clicks item in ToughAsNailsU_recipes_gui:
             - run enoughitemsu_open_new_used_in_gui def:<context.item>|true|<context.inventory.script.name>
-        after player left clicks item in BoatTrainU_items_gui:
+        after player left clicks item in ToughAsNailsU_recipes_gui:
             - run enoughitemsu_open_new_recipes_gui def:<context.item>|true|<context.inventory.script.name>
 
 #------------------------

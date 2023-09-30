@@ -1,11 +1,19 @@
 
-MorePaintU_painting:
+MorePaintU_painting_entity:
     type: entity
     debug: false
     entity_type: item_display
     mechanisms:
         #translation: 0,-0.375,0.001
         translation: 0,0,-0.001
+
+MorePaintU_painting:
+    type: item
+    material: painting
+    display name: sketch
+    mechanisms:
+        raw_nbt: <map[EntityTag=<map[variant=string:minecraft:match]>]>
+
 
 MorePainU_data:
     type: data
@@ -31,7 +39,7 @@ MorePaintU_paintings_events:
     type: world
     debug: false
     events:
-        on player places painting:
+        on player places painting item:MorePaintU_painting:
             - adjust <context.hanging> hide_from_players
             #- wait 1s
             - run morepaintu_show_painting def:<context.hanging>
@@ -57,7 +65,7 @@ MorePaintU_show_painting:
         - define display_data <[data].get[<[x_size]>x<[y_size]>]>
         - define cmd <[display_data].get[cmd].if_null[]>
         - define item <[display_data].get[item].if_null[flint]>[custom_model_data=<[cmd]>]
-        - define display MorePaintU_painting[scale=<[x_size].add[0.0001]>,<[y_size].add[0.0001]>,1;item=<[item]>]
+        - define display MorePaintU_painting_entity[scale=<[x_size].add[0.0001]>,<[y_size].add[0.0001]>,1;item=<[item]>]
         - spawn <[display]> <[painting].location.rotate_yaw[180]> save:display
         #- adjust <[display]> scale:<[x_size].add[0.0001]>,<[y_size].add[0.0001]>,1
         #- adjust <[display]> item:<[item]>

@@ -519,9 +519,9 @@ EchoU_recipes_gui_actions:
     type: world
     debug: false
     events:
-        after player right clicks item in BoatTrainU_items_gui:
+        after player right clicks item in EchoU_recipes_gui:
             - run enoughitemsu_open_new_used_in_gui def:<context.item>|true|<context.inventory.script.name>
-        after player left clicks item in BoatTrainU_items_gui:
+        after player left clicks item in EchoU_recipes_gui:
             - run enoughitemsu_open_new_recipes_gui def:<context.item>|true|<context.inventory.script.name>
 
 EchoU_commands:

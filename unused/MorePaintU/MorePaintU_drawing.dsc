@@ -36,8 +36,8 @@ MorePaintU_canvas_entity:
         scale: 0.126,0.126,0.126
         translation: -0.005,-0.49,0.04
         background_color: 0,0,0,0
-    flags:
-        morepaintu_canvas_data: <proc[morepaintu_canvas_data_generate].context[32|32]>
+    #flags:
+    #    morepaintu_canvas_data: <proc[morepaintu_canvas_data_generate].context[32|32]>
 
 #------------------------
 MorePaintU_brush:
@@ -45,28 +45,47 @@ MorePaintU_brush:
     material: firework_star
     display name: Brush
 
+MorePaintU_sketch:
+    type: item
+    material: painting
+    display name: sketch
+    lore:
+        - <proc[morepaintu_canvas_data_generate].context[32|32].proc[MorePaintU_canvas_data_to_lore_text]>
+    mechanisms:
+        raw_nbt: <map[EntityTag=<map[variant=string:minecraft:kebab]>]>
+        hides: ALL
+    flags:
+        morepaintu_canvas_data: <proc[morepaintu_canvas_data_generate].context[32|32]>
+
+MorePaintU_finished_painting:
+    type: item
+    material: painting
+    display name: painting
+    mechanisms:
+        raw_nbt: <map[EntityTag=<map[variant=string:minecraft:kebab]>]>
+
 #------------------------
 MorePaintU_drawing_events:
     type: world
     debug: false
     events:
 
-        on player right clicks item_frame with:MorePaintU_brush:
-            - define frame <context.entity>
-            - if <[frame].framed_item.material.name> != filled_map:
-                - stop
-            - determine cancelled passively
-            - ratelimit <player> 1t
-
-            - spawn morepaintu_frame_hitbox_entity <context.entity.location.below[0.5].backward[0.45]> save:hitbox
-            - spawn morepaintu_canvas_entity <context.entity.location> save:canvas
-
-            - define hitbox <entry[hitbox].spawned_entity>
-            - define canvas <entry[canvas].spawned_entity>
-
-            - flag <[frame]> canvas:<[canvas]>
-            - flag <[hitbox]> canvas:<[canvas]>
-            - flag <[hitbox]> frame:<[frame]>
+        #on player right clicks item_frame with:MorePaintU_brush:
+        #    - define frame <context.entity>
+        #    - if <[frame].framed_item.material.name> != filled_map:
+        #        - stop
+        #    - determine cancelled passively
+        #    - ratelimit <player> 1t
+#
+        #    - spawn morepaintu_frame_hitbox_entity <context.entity.location.below[0.5].backward[0.45]> save:hitbox
+        #    - spawn morepaintu_canvas_entity <context.entity.location> save:canvas
+#
+        #    - define hitbox <entry[hitbox].spawned_entity>
+        #    - define canvas <entry[canvas].spawned_entity>
+#
+        #    - flag <[frame]> canvas:<[canvas]>
+        #    - flag <[hitbox]> canvas:<[canvas]>
+        #    - flag <[hitbox]> frame:<[frame]>
 
         #after player right clicks block with:MorePaintU_brush:
         after player right clicks MorePaintU_frame_hitbox_entity with:MorePaintU_brush:
@@ -76,7 +95,7 @@ MorePaintU_drawing_events:
             - if <[map_trace]> == null:
                 - stop
 
-            - define canvas <[map_trace].get[entity].flag[canvas]>
+            - define canvas <[map_trace].get[entity].flag[morepaintu_canvas]>
 
             #- narrate <[map_trace].get[x]>_<[map_trace].get[y]>
             #- define x <[map_trace].get[x].div[4].round_down.mul[4].add[1]>
@@ -104,13 +123,63 @@ MorePaintU_drawing_events:
             - flag <[canvas]> morepaintu_canvas_data:<[canvas_data]>
 
 
+#---------------------
+MorePaintU_drawing_managment_events:
+    type: world
+    debug: false
+    events:
         after player damages MorePaintU_frame_hitbox_entity:
-            - define lore <&optimize><context.entity.flag[canvas].flag[morepaintu_canvas_data].proc[MorePaintU_canvas_data_to_lore_text]>
-            - narrate <[lore].length>
-            - give paper[lore=<[lore]>]
+            - ratelimit <player> 1t
+
+            - define canvas_data <context.entity.flag[morepaintu_canvas].flag[morepaintu_canvas_data]>
+            - define lore <[canvas_data].proc[MorePaintU_canvas_data_to_lore_text]>
+            - drop <item[morepaintu_sketch].with[lore=<[lore]><&nl>].with_flag[morepaintu_canvas_data:<[canvas_data]>]> <context.entity.flag[morepaintu_frame].location.forward[0.1]>
+
+            - run morepaintu_canvas_remove def:<context.entity>
+
+
+        on player places painting item:MorePaintU_sketch:
+            - spawn item_frame <context.hanging.location> save:frame
+            - define frame <entry[frame].spawned_entity>
+            - run morepaintu_canvas_spawm def:<[frame]>|<context.item>
+        after player places painting item:MorePaintU_sketch:
+            - remove <context.hanging>
 
 
 
+#-------------------
+MorePaintU_canvas_spawm:
+    type: task
+    definitions: frame|item
+    debug: false
+    script:
+
+        - adjust <[frame]> framed:filled_map
+
+        - spawn morepaintu_frame_hitbox_entity <[frame].location.below[0.5].backward[0.45]> save:hitbox
+        - spawn morepaintu_canvas_entity <[frame].location> save:canvas
+
+        - define hitbox <entry[hitbox].spawned_entity>
+        - define canvas <entry[canvas].spawned_entity>
+
+        - flag <[canvas]> morepaintu_canvas_data:<[item].flag[morepaintu_canvas_data]>
+        - adjust <[canvas]> text:<[item].flag[morepaintu_canvas_data].proc[morepaintu_canvas_data_to_display_text]>
+
+        - flag <[frame]> morepaintu_canvas:<[canvas]>
+        - flag <[hitbox]> morepaintu_canvas:<[canvas]>
+        - flag <[hitbox]> morepaintu_frame:<[frame]>
+
+
+MorePaintU_canvas_remove:
+    type: task
+    definitions: hitbox
+    debug: false
+    script:
+        - remove <[hitbox].flag[morepaintu_canvas]>
+        - remove <[hitbox].flag[morepaintu_frame]>
+        - remove <[hitbox]>
+
+#-------------------
 MorePaintU_canvas_data_to_display_text:
     type: procedure
     definitions: canvas_data
@@ -124,26 +193,45 @@ MorePaintU_canvas_data_to_display_text:
 
 MorePaintU_canvas_data_to_lore_text:
     type: procedure
-    definitions: canvas_data
     debug: false
+    definitions: canvas_data
+    data:
+        32: k
+        16: l
+        8: m
     script:
-        - define text <empty>
-        - define dis_row 0
-        - define end 󏿟
-        - foreach <[canvas_data]> as:row:
-            - define text <[text]><[row].separated_by[y].replace_text[x].with[<[dis_row]>].font[morepaintu:font]><[end]>
+        - define scaling 2
+        - define text <white><empty>
+        - define end <script.data_key[data.<[canvas_data].size.div[<[scaling]>]>]>
 
-            - define dis_row:+:1
+        - define row_number 0
+        - define current_end <script.data_key[data.<[canvas_data].size.div[<[scaling]>]>]>
 
-            - if <[dis_row]> == 9:
-                - define end <&nl>
-            - else if <[dis_row]> == 10:
-                - define dis_row 0
-                - define end 󏿟
+        - foreach <[canvas_data].proc[morepaintu_get_every_n_from_list].context[<[scaling]>]> as:row:
+            - define text <[text]><element[<[row].proc[morepaintu_get_every_n_from_list].context[<[scaling]>].separated_by[y].replace_text[x].with[<[row_number]>].font[morepaintu:font]><[current_end]>].font[morepaintu:font]>
+
+            - define row_number:+:1
+
+            - if <[row_number]> == 9:
+                - define current_end <&nl>
+            - else if <[row_number]> == 10:
+                - define row_number 0
+                - define current_end <[end]>
             - else:
-                - define end 󏿟
+                - define current_end <[end]>
 
         - determine <[text]>
+
+
+MorePaintU_get_every_n_from_list:
+    type: procedure
+    debug: false
+    definitions: list|n
+    script:
+        - define result <list[]>
+        - repeat <[list].size.div[<[n]>].round> from:0 as:i:
+            - define result:->:<[list].get[<[i].mul[<[n]>].add[1]>]>
+        - determine <[result]>
 
 
 MorePaintU_canvas_data_set_pixel:
@@ -170,6 +258,7 @@ MorePaintU_canvas_display_line_width:
     script:
         - determine <[x].mul[10].add[1]>
 
+#-------------------
 
             #- narrate <[canvas_data]>
 

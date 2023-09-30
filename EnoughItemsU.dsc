@@ -363,10 +363,13 @@ EnoughItemsU_gui_events:
 
 EnoughItemsU_reload_events:
     type: world
+    debug: false
     events:
         after server resources reloaded:
             - run enoughitemsu_generate_added_crafts_to_vanilla_items
         after reload scripts:
+            - run enoughitemsu_generate_added_crafts_to_vanilla_items
+        after server start:
             - run enoughitemsu_generate_added_crafts_to_vanilla_items
 
 #-------------------------------

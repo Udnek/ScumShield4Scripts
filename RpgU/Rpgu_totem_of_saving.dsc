@@ -37,7 +37,7 @@ RpgU_totem_of_saving_events:
         on player dies:
             - if !<player.inventory.contains_item[RpgU_totem_of_saving]>:
                 - stop
-            - define drops <inventory[generic[contents=<context.drops>]]>
+            - define drops <inventory[generic[contents=<context.drops>;size=54]]>
             - take item:RpgU_totem_of_saving from:<[drops]>
             - run RpgU_totem_of_saving_spawn_grave def.location:<player.location> def.items:<list_single[<[drops].list_contents.exclude[<item[air]>]>]> def.owner:<player>
             - determine NO_DROPS passively
