@@ -12,6 +12,9 @@ AmbienceU_show_fog:
 
             - foreach <server.online_players> as:__player:
 
+                - if !<player.location.exists>:
+                    - foreach next
+
                 - define can_have_fog <player.location.world.environment.equals[NORMAL].and[<player.location.downfall_type.equals[RAIN]>]>
                 - define have_fog <player.bossbar_ids.contains[AmbienceU_fog]>
 

@@ -263,7 +263,7 @@ RpgU_spawn_events:
     debug: false
     events:
         after player joins:
-            - adjust <player> attribute_base_values:<map[generic_max_health=10]>
+            - adjust <player> attribute_base_values:<map[generic_max_health=14]>
 
         on entity picks up item:
             - if !<context.pickup_entity.proc[rpgu_is_equippable]>:
@@ -274,7 +274,7 @@ RpgU_spawn_events:
             - if <server.vanilla_tagged_materials[piglin_loved]> !contains <context.item.material>:
                 - determine cancelled
 
-        on entity spawns:
+        on entity spawns chance:50:
             - if <context.entity.proc[rpgu_is_equippable]>:
                 - define equipment <context.entity.proc[rpgu_generate_equipment_for_mob]>
                 - adjust <context.entity> equipment:<[equipment].get[armor]>

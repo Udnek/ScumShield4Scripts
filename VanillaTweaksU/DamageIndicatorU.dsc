@@ -6,6 +6,9 @@ DamageIndicatorU_indicator_entity:
         text: Damage
         pivot: center
         text_shadowed: false
+        background_color: 0,0,0,0
+        interpolation_duration: 10t
+        translation: 0,0.4,0
 
 DamageIndicatorU_actions:
     type: world
@@ -30,4 +33,7 @@ DamageIndicatorU_actions:
             - define text <[text]><[damage]>
 
             - adjust def:text_entity text:<[text]>
-            - fakespawn <[text_entity]> <context.entity.eye_location.above[0.4]> players:<server.online_players> d:1
+            - fakespawn <[text_entity]> <context.entity.eye_location> players:<server.online_players> d:1 save:display
+            - wait 2t
+            - adjust <entry[display].faked_entity> translation:0,2,0
+            - adjust <entry[display].faked_entity> interpolation_start:0t

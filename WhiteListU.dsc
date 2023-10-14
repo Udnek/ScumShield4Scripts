@@ -6,21 +6,37 @@ WhiteListU_events:
             - determine <queue> passively
             - ~run whitelistu_load_whitelist
 
-        on player logs in:
-            - define whitelisted <player.name.proc[whitelistu_is_in_whitelist]>
-            - run whitelistu_unload_whitelist
+            - run whitelistu_log_message "def:player <red><context.name><gray> tries to join!"
+            - define whitelisted <context.name.proc[whitelistu_is_in_whitelist]>
             - if !<[whitelisted]>:
                 - determine "KICKED:<red>NOT IN WHITELIST"
+
+            - run whitelistu_unload_whitelist
+
+        #on player logs in:
+        #    - announce to_console <red><player.name>
+        #    - define whitelisted <player.name.proc[whitelistu_is_in_whitelist]>
+        #    - run whitelistu_unload_whitelist
+        #    - if !<[whitelisted]>:
+        #        - determine "KICKED:<red>NOT IN WHITELIST"
+
+        #on player joins:
+        #    - announce to_console <red><player.name>
+        #    - define whitelisted <player.name.proc[whitelistu_is_in_whitelist]>
+        #    - if !<[whitelisted]>:
+        #        - kick <player>
+        #    - run whitelistu_unload_whitelist
+
 
         after server start:
             - if !<proc[WhiteListU_has_whitelist]>:
                 - ~yaml create id:whitelistu
                 - run whitelistu_save_whitelist
-                - announce "<gray>[WhiteListU] <green>Whitelist created!" to_console
+                - run whitelistu_log_message "def:<green>Whitelist created!"
             - else:
-                - announce "<gray>[WhiteListU] <green>Whitelist loaded!" to_console
+                - run whitelistu_log_message "def:<green>Whitelist loaded!"
             - ~run whitelistu_load_whitelist
-            - announce "<gray>[WhiteListU] Players: <green><proc[whitelistu_names].comma_separated>" to_console
+            - run whitelistu_log_message "def:Players: <green><proc[whitelistu_names].comma_separated>"
             - run whitelistu_unload_whitelist
 
 WhiteListU_has_whitelist:
@@ -72,10 +88,10 @@ WhiteListU_add_to_whitelist:
     script:
         - ~run whitelistu_load_whitelist
         - if <[name].proc[whitelistu_is_in_whitelist]>:
-            - announce "<gray>[WhiteListU] <red>ALREADY IN LIST!" to_console
+            - run whitelistu_log_message def:"<red>ALREADY IN LIST!"
             - stop
         - yaml id:whitelistu set <[name].to_lowercase>
-        - announce "<gray>[WhiteListU] Players: <green><proc[whitelistu_names].comma_separated>" to_console
+        - run whitelistu_log_message "def:Players: <green><proc[whitelistu_names].comma_separated>"
         - run whitelistu_save_whitelist
 
 WhiteListU_remove_from_whitelist:
@@ -85,12 +101,20 @@ WhiteListU_remove_from_whitelist:
     script:
         - ~run whitelistu_load_whitelist
         - if !<[name].proc[whitelistu_is_in_whitelist]>:
-            - announce "<gray>[WhiteListU] <red>ALREADY NOT IN LIST!" to_console
+            - run whitelistu_log_message def:"<red>ALREADY NOT IN LIST!"
             - stop
         - yaml id:whitelistu set <[name]>:!
-        - announce "<gray>[WhiteListU] Players: <green><proc[whitelistu_names].comma_separated>" to_console
+        - run whitelistu_log_message "def:Players: <green><proc[whitelistu_names].comma_separated>"
         - run whitelistu_save_whitelist
 
+#-------------
+WhiteListU_log_message:
+    type: task
+    debug: false
+    definitions: text
+    script:
+        - announce "<gray>[WhiteListU] <[text]>" to_console
+#-------------
 
 WhiteListU_command:
     type: command

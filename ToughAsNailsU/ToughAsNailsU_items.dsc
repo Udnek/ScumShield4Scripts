@@ -59,6 +59,9 @@ ToughAsNailsU_items_data:
         ToughAsNailsU_wheat_wort_bottle: 6|+10|20s
         ToughAsNailsU_wheat_beer_bottle: 10|-25|120s
 
+        ToughAsNailsU_raw_milk_cacao_bottle: 8|-15|50s
+        ToughAsNailsU_milk_cacao_bottle: 10|+30|100s
+
     fixed_bottle:
         - ToughAsNailsU_green_sweet_berry_tea_bottle
         - ToughAsNailsU_green_glow_berry_tea_bottle
@@ -91,7 +94,6 @@ ToughAsNailsU_items_data:
         - ToughAsNailsU_wheat_beer_bottle
 
 #--------------------------------
-
 ToughAsNailsU_nailer_enchantment:
     debug: false
     type: enchantment
@@ -493,7 +495,6 @@ ToughAsNailsU_wheat_wort_bottle:
     display name: <reset><&translate[item.toughasnailsu.wheat_wort_bottle]>
     lore:
         - <proc[ToughAsNailsU_food_lore].context[ToughAsNailsU_wheat_wort_bottle]>
-        #- <reset><&font[toughasnailsu]><&translate[toughasnailsu.thirst.lore.level.6]>
     flags:
         ToughAsNailsU_to_beer: ToughAsNailsU_wheat_beer_bottle
 
@@ -506,9 +507,40 @@ ToughAsNailsU_wheat_beer_bottle:
     display name: <reset><&translate[item.toughasnailsu.wheat_beer_bottle]>
     lore:
         - <proc[ToughAsNailsU_food_lore].context[ToughAsNailsU_wheat_beer_bottle]>
-        #- <reset><&font[toughasnailsu]><&translate[toughasnailsu.thirst.lore.level.10]>
     flags:
         ToughAsNailsU_beer: true
+
+ToughAsNailsU_raw_milk_cacao_bottle:
+    debug: false
+    type: item
+    material: honey_bottle
+    mechanisms:
+        custom_model_data: 1500
+    recipes:
+        1:
+            type: shapeless
+            output_quantity: 1
+            input: material:milk_bucket|material:cocoa_beans|material:cocoa_beans|material:sugar|ToughAsNailsU_drinking_glass_bottle
+    display name: <reset><&translate[item.toughasnailsu.raw_milk_cacao_bottle]>
+    lore:
+        - <proc[ToughAsNailsU_food_lore].context[ToughAsNailsU_raw_milk_cacao_bottle]>
+
+ToughAsNailsU_milk_cacao_bottle:
+    debug: false
+    type: item
+    material: honey_bottle
+    mechanisms:
+        custom_model_data: 1600
+    recipes:
+        1:
+            type: smoker
+            cook_time: 5s
+            category: food
+            experience: 0.35
+            input: ToughAsNailsU_raw_milk_cacao_bottle
+    display name: <reset><&translate[item.toughasnailsu.milk_cacao_bottle]>
+    lore:
+        - <proc[ToughAsNailsU_food_lore].context[ToughAsNailsU_milk_cacao_bottle]>
 #---------------------------
 ToughAsNailsU_nailer_enchanted_book:
     debug: false

@@ -63,41 +63,21 @@ ToughAsNailsU_armor_data:
         diamond_leggings: 1.15
         diamond_boots: 1.15
 
-        netherite_helmet: 1
-        netherite_chestplate: 1
-        netherite_leggings: 1
-        netherite_boots: 1
+        netherite_helmet: 1.1
+        netherite_chestplate: 1.1
+        netherite_leggings: 1.1
+        netherite_boots: 1.1
 
     armor_add:
-        leather_helmet: 2.5
-        leather_chestplate: 2.5
-        leather_leggings: 2.5
-        leather_boots: 2.5
+        leather_helmet: 3
+        leather_chestplate: 3
+        leather_leggings: 3
+        leather_boots: 3
 
-        chainmail_helmet: -2
-        chainmail_chestplate: -2
-        chainmail_leggings: -2
-        chainmail_boots: -2
-
-        golden_helmet: 0
-        golden_chestplate: 0
-        golden_leggings: 0
-        golden_boots: 0
-
-        iron_helmet: 0
-        iron_chestplate: 0
-        iron_leggings: 0
-        iron_boots: 0
-
-        diamond_helmet: 0
-        diamond_chestplate: 0
-        diamond_leggings: 0
-        diamond_boots: 0
-
-        netherite_helmet: 0
-        netherite_chestplate: 0
-        netherite_leggings: 0
-        netherite_boots: 0
+        chainmail_helmet: -2.5
+        chainmail_chestplate: -2.5
+        chainmail_leggings: -2.5
+        chainmail_boots: -2.5
 
 #--------------------------------
 ToughAsNailsU_anabiosis_entity:
@@ -106,10 +86,7 @@ ToughAsNailsU_anabiosis_entity:
     entity_type: block_display
     mechanisms:
         material: ice
-        #display_entity_data:
         scale: 1.0,2.0,1.0
-        # eft_rotation: 0|0|0|1
-        # ight_rotation: 0|0|0|1
         translation: -0.5,-1.38,-0.5
         view_range: 1
 
@@ -129,13 +106,10 @@ ToughAsNailsU_true_sunlight:
     definitions: location
     script:
         - define max_sunlight <[location].light.sky>
-        #- define block <[location].light.block>
-        #- define total <[location].light>
         - define surface_sunlight <[location].with_y[1000].light>
         - if <[surface_sunlight]> >= <[max_sunlight]>:
             - determine <[max_sunlight].div[15].round_to[5]>
         - determine <[surface_sunlight].div[15].round_to[5]>
-        #- determine <[light].div[7.5].sub[1]>
 
 ToughAsNailsU_in_water:
     type: procedure
@@ -185,9 +159,9 @@ ToughAsNailsU_temperature_color_calculator:
     definitions: color|n
     script:
         - define inverted_color:<color[<element[255].sub[<[color].red>]>,<element[255].sub[<[color].green>]>,<element[255].sub[<[color].blue>]>]>
-        - define red:<element[255].sub[<[inverted_color].red.mul[<[n].div[1020]>].round>]>
-        - define green:<element[255].sub[<[inverted_color].green.mul[<[n].div[1020]>].round>]>
-        - define blue:<element[255].sub[<[inverted_color].blue.mul[<[n].div[1020]>].round>]>
+        - define red <element[255].sub[<[inverted_color].red.mul[<[n].div[1020]>].round>]>
+        - define green <element[255].sub[<[inverted_color].green.mul[<[n].div[1020]>].round>]>
+        - define blue <element[255].sub[<[inverted_color].blue.mul[<[n].div[1020]>].round>]>
         - determine <&color[<[red]>,<[green]>,<[blue]>]>
 
 ToughAsNailsU_armor_impact_calculator:
@@ -199,8 +173,8 @@ ToughAsNailsU_armor_impact_calculator:
         - define mul 1
         - define add 0
         - foreach <[equipment_map]> as:item:
-            - define name:<[item].script.name.if_null[<[item].material.name>]>
-            - define mul:*:<element[1].sub[<[item].enchantment_map.get[ToughAsNailsU_nailer].if_null[0].mul[0.12]>]>
+            - define name <[item].proc[utilsu_item_actual_name]>
+            - define mul:*:<element[1].sub[<[item].enchantment_map.get[ToughAsNailsU_nailer].if_null[0]>]>
 
             - define mul:*:<[data].data_key[armor_mul].get[<[name]>].if_null[1]>
             - define add:+:<[data].data_key[armor_add].get[<[name]>].if_null[0]>
@@ -587,30 +561,31 @@ ToughAsNailsU_autoupdate_temperature:
                 - define mull_impact <[biome_humidity].add[0.8].mul[<[armor_mul]>]>
                 - define result <[add_impact].mul[<[mull_impact]>].add[<[food]>]>
 
-                - define final_result <[result].mul[0.15]>
 
                 ## FIRE RESISTANCE
-                - if <player.has_effect[fire_resistance]>:
-                    - if <[result]> > 0:
-                        - define final_result 0
-
-
-                ## NATURAL RESTORE
-                - if <[result].abs> < 13:
-                    - define temperature <player.flag[ToughAsNailsU.temperature]>
-                    - flag <player> ToughAsNailsU.temperature_stabilization:true
-                    - if <[temperature].abs> < 6:
-                        - define final_result <[temperature].mul[-1]>
-                    - else:
-                        - define final_result <[temperature].is_less_than[0].if_true[6].if_false[-6]>
+                - if <player.has_effect[fire_resistance]> && <[result]> > 0:
+                    - define final_result 0
 
                 - else:
-                    ## ADOPTATION
-                    - flag <player> ToughAsNailsU.temperature_stabilization:!
 
                     - define temperature <player.flag[ToughAsNailsU.temperature]>
+
+                    ## ADOPTATION
                     - if ( <[temperature]> > 0 && <[result]> > 0 ) || ( <[temperature]> < 0 && <[result]> < 0 ):
-                        - define final_result:*:0.5
+                        - define result:*:0.5
+
+                    ## NATURAL RESTORE
+                    - if <[result].abs> < 13:
+                        - flag <player> ToughAsNailsU.temperature_stabilization:true
+                        - if <[temperature].abs> < 6:
+                            - define final_result <[temperature].mul[-1]>
+                        - else:
+                            - define final_result <[temperature].is_less_than[0].if_true[6].if_false[-6]>
+
+                    - else:
+                        - flag <player> ToughAsNailsU.temperature_stabilization:!
+                        - define final_result <[result].mul[0.15]>
+
 
 
                 ## APPLYING
@@ -814,42 +789,24 @@ ToughAsNailsU_crafting_actions:
             - define bottle_after <player.inventory.quantity_item[glass_bottle]>
             - take from:<context.inventory> item:glass_bottle quantity:1
             - take item:glass_bottle quantity:<[bottle_after].sub[<[bottle_before]>]>
-        #    - narrate <context.amount>
-        #    - if <context.item.proc[ToughAsNailsU_is_fixed_bottle]>:
-        #        - narrate <context.amount>
-        #        - wait 1t
-        #        - narrate <context.amount>
-                #- narrate <context.amount>
-                #- take item:glass_bottle quantity:<context.amount>
-                #- narrate <context.amount>
-                #- define pos:<context.inventory.find_item[glass_bottle]>
-                #- if <[pos]> == -1:
-                #    - define amount <context.amount>
-                #    - wait 1t
-                #    - take item:glass_bottle from:<player.inventory> quantity:<[amount]>
-                #    - define pos <context.inventory.find_item[glass_bottle]>
 
-        #after player crafts ToughAsNailsU_*:
-        #    - narrate <context.amount>
-        #    - if <context.item.proc[ToughAsNailsU_is_fixed_bottle]>:
-        #        - narrate <context.amount>
-                #- take item:glass_bottle
-                #- define pos <context.inventory.find_item[glass_bottle]>
-                #- narrate <[pos]>
-                #- if <[pos]> != -1:
-                #    - inventory set d:<context.inventory> o:air slot:<[pos]>
 
-        on item despawns:
-            - if <context.item.has_flag[ToughAsNailsU_to_beer]>:
-                - if <context.entity.location.light> <= 5:
-                    - define item <item[<context.item.flag[ToughAsNailsU_to_beer]>]>
-                    - drop <[item]> <context.entity.location> speed:0 quantity:<context.entity.item.quantity>
-                    - remove <context.entity>
-                - else:
-                    - adjust <player> time_lived:0t
+        after item despawns:
+            - if !<context.item.has_flag[ToughAsNailsU_to_beer]>:
+                - stop
 
-                - playeffect spit <context.entity.location> quantity:4 velocity:0,0.2,0
-                - playsound <context.entity.location> BLOCK_FIRE_EXTINGUISH volume:0.15
+            - announce OK
+
+            - if <context.location.light> <= 5:
+                - define item <item[<context.item.flag[ToughAsNailsU_to_beer]>]>
+                - drop <[item]> <context.location> speed:0 quantity:<context.item.quantity>
+                - remove <context.entity>
+            - else:
+                - adjust <player> time_lived:0t
+                - drop <context.item> <context.location> speed:0
+
+            - playeffect spit <context.location> quantity:4 velocity:0,0.2,0
+            - playsound <context.location> BLOCK_FIRE_EXTINGUISH volume:0.15
 
         ## TODO FIX IT
         #after cauldron level raises:
@@ -1030,7 +987,7 @@ ToughAsNailsU_flask_actions:
 ToughAsNailsU_recipes_gui:
     type: inventory
     inventory: CHEST
-    title: <&translate[toughasnailsu.items_gui.title]>
+    title: <blue><bold>ToughAsNailsU
     size: 54
     gui: true
     definitions:
@@ -1067,13 +1024,16 @@ ToughAsNailsU_recipes_gui:
         f1: ToughAsNailsU_wheat_wort_bottle
         f2: ToughAsNailsU_wheat_beer_bottle
 
+        f3: ToughAsNailsU_raw_milk_cacao_bottle
+        f4: ToughAsNailsU_milk_cacao_bottle
+
     slots:
     - [a1] [a2] [a3] [a4] [a5] [a6] [a7] [a8] [a9]
     - [b1] [b2] [b3] [b4] [] [] [] [] [b5]
     - [c1] [c2] [c3] [c4] [] [] [] [] []
     - [d1] [d2] [d3] [] [] [] [] [] []
     - [e1] [e2] [e3] [e4] [] [] [] [] []
-    - [f1] [f2] [] [] [] [] [] [] []
+    - [f1] [f2] [f3] [f4] [] [] [] [] []
 
 #-------------------------------
 ToughAsNailsU_commands:

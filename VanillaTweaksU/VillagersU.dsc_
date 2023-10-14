@@ -1,0 +1,27 @@
+VillagersU_events:
+    type: world
+    debug: true
+    events:
+        on player opens merchant bukkit_priority:LOWEST:
+            - define villager <context.inventory.id_holder>
+            - if <[villager].entity_type.if_null[null]> != VILLAGER:
+                - stop
+
+            #- define new_trades <[villager].trades>
+            #- foreach <[villager].trades> as:trade:
+            #    - if <[trade].inputs.get[1].proc[utilsu_item_actual_name]> == emerald:
+                #    - define inputs <[trade].inputs>
+                    #- define inputs[1]:<[inputs].get[1].with[material=emerald_block]>
+                    #- define new_trades.<[loop_index]>.inputs.1 emerald_block
+
+                #- define new_trades:->:<[new_trade].with[price_multiplier=0;special_price=0]>
+                #- define new_trades <[new_trades].include[<[new_trade]>]>
+
+            #- narrate <[new_trade]>
+
+            - adjust <[villager]> trades:<[villager].trades>
+
+            - foreach <[villager].trades> as:trade:
+                - foreach <[trade].inputs> as:input:
+                    - give <[input]>
+                - give <[trade].result>

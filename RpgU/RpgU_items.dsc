@@ -71,15 +71,9 @@ RpgU_smithing_events:
             - determine <[main_item].proc[rpgu_apply_upgrade_stone].context[<[template]>]>
 
 
-#RpgU_craft_events:
-#    type: world
-#    debug: false
-#    events:
-#        on item recipe formed:
-#            - if <context.recipe_id> == minecraft:repair_item:
-#                - announce nice
-#    	on player prepares grindstone craft item
-#                #- determine cancelled
+        on player prepares anvil craft item:
+            - determine <context.inventory.slot[1].enchantment_types.size.add[<context.inventory.slot[2].enchantment_types.size>]>
+
 
 
 #TODO REMOVE

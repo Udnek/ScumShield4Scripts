@@ -1,22 +1,3 @@
-#------------------------
-#MorePaintU_frame_hitbox_entity:
-#    type: entity
-#    debug: false
-#    entity_type: falling_block
-#    mechanisms:
-#        fallingblock_type: water
-#        invulnerable: true
-#        auto_expire: false
-#        time_lived: 800
-#        gravity: false
-
-#MorePaintU_frame_hitbox_holder_entity:
-#    type: entity
-#    debug: false
-#    entity_type: item_display
-#    mechanisms:
-#        passenger: MorePaintU_frame_hitbox_entity
-
 MorePaintU_frame_hitbox_entity:
     type: entity
     debug: false
@@ -36,8 +17,6 @@ MorePaintU_canvas_entity:
         scale: 0.126,0.126,0.126
         translation: -0.005,-0.49,0.04
         background_color: 0,0,0,0
-    #flags:
-    #    morepaintu_canvas_data: <proc[morepaintu_canvas_data_generate].context[32|32]>
 
 #------------------------
 MorePaintU_brush:
@@ -47,15 +26,53 @@ MorePaintU_brush:
 
 MorePaintU_sketch:
     type: item
+    debug: false
     material: painting
     display name: sketch
-    lore:
-        - <proc[morepaintu_canvas_data_generate].context[32|32].proc[MorePaintU_canvas_data_to_lore_text]>
+    allow in material recipes: true
     mechanisms:
         raw_nbt: <map[EntityTag=<map[variant=string:minecraft:kebab]>]>
         hides: ALL
     flags:
         morepaintu_canvas_data: <proc[morepaintu_canvas_data_generate].context[32|32]>
+    lore:
+        - <proc[morepaintu_canvas_data_generate].context[32|32].proc[MorePaintU_painting_generate_lore]>
+
+MorePaintU_merged_sketch:
+    type: item
+    debug: false
+    material: paper
+    display name: merged_sletch
+    recipes:
+       1:
+            type: shaped
+            recipe_id: morepaintu_merged_sketch_1x2
+            input:
+            - material:painting
+            - material:painting
+       2:
+            type: shaped
+            recipe_id: morepaintu_merged_sketch_2x1
+            input:
+            - material:painting|material:painting
+       3:
+            type: shaped
+            recipe_id: morepaintu_merged_sketch_2x2
+            input:
+            - material:painting|material:painting
+            - material:painting|material:painting
+       4:
+            type: shaped
+            recipe_id: morepaintu_merged_sketch_3x1
+            input:
+            - material:painting|material:painting|material:painting
+       5:
+            type: shaped
+            recipe_id: morepaintu_merged_sketch_1x3
+            input:
+            - material:painting
+            - material:painting
+            - material:painting
 
 MorePaintU_finished_painting:
     type: item
@@ -63,6 +80,74 @@ MorePaintU_finished_painting:
     display name: painting
     mechanisms:
         raw_nbt: <map[EntityTag=<map[variant=string:minecraft:kebab]>]>
+
+#------------------------
+MorePaintU_crafting_events:
+    type: world
+    debug: false
+    events:
+        on MorePaintU_merged_sketch recipe formed:
+            - narrate ok
+            - if <context.recipe> contains painting:
+                - determine cancelled
+
+            - define canvases <map[]>
+            - define sketches <context.recipe.exclude[<item[air]>]>
+            - foreach <[sketches]> as:sketch:
+                - define canvases.<[loop_index]> <[sketch].flag[morepaintu_canvas_data]>
+            - choose <context.recipe_id>:
+                - case denizen:morepaintu_merged_sketch_1x2:
+                    - define mode 1x2
+                - case denizen:morepaintu_merged_sketch_1x3:
+                    - define mode 1x3
+                - case denizen:morepaintu_merged_sketch_2x1:
+                    - define mode 2x1
+                - case denizen:morepaintu_merged_sketch_3x1:
+                    - define mode 3x1
+                - case denizen:morepaintu_merged_sketch_2x2:
+                    - define mode 2x2
+
+            - define canvas <[mode].proc[MorePaintU_canvas_datas_merge].context[<[canvases]>]>
+            - determine <context.item.with[lore=<[canvas].proc[morepaintu_painting_generate_lore]>].with_flag[morepaintu_canvas_data:<[canvas]>]>
+
+
+MorePaintU_canvas_datas_merge:
+    type: procedure
+    debug: false
+    definitions: mode|canvases
+    script:
+        - choose <[mode]>:
+            - case 1x2:
+                - determine <[canvases].get[1].include[<[canvases].get[2]>]>
+            - case 1x3:
+                - determine <[canvases].get[1].include[<[canvases].get[2]>].include[<[canvases].get[3]>]>
+            - case 2x1:
+                - define origin <[canvases].get[1]>
+                - define adding <[canvases].get[2]>
+                - foreach <[origin]> as:origin_row:
+                    - define origin[<[loop_index]>]:<[origin_row].include[<[adding].get[<[loop_index]>]>]>
+                - determine <[origin]>
+            - case 3x1:
+                - define origin <[canvases].get[1]>
+                - define adding <[canvases].get[2]>
+                - define adding2 <[canvases].get[3]>
+                - foreach <[origin]> as:origin_row:
+                    - define origin[<[loop_index]>]:<[origin_row].include[<[adding].get[<[loop_index]>]>].include[<[adding2].get[<[loop_index]>]>]>
+                - determine <[origin]>
+            - case 2x2:
+                - definemap up_canvases:
+                    1: <[canvases].get[1]>
+                    2: <[canvases].get[2]>
+                - definemap down_canvases:
+                    1: <[canvases].get[3]>
+                    2: <[canvases].get[4]>
+                - define up <element[2x1].proc[MorePaintU_canvas_datas_merge].context[<[up_canvases]>]>
+                - define down <element[2x1].proc[MorePaintU_canvas_datas_merge].context[<[down_canvases]>]>
+                - definemap canvases:
+                    1: <[up]>
+                    2: <[down]>
+                - define final <element[1x2].proc[MorePaintU_canvas_datas_merge].context[<[canvases]>]>
+                - determine <[final]>
 
 #------------------------
 MorePaintU_drawing_events:
@@ -76,13 +161,13 @@ MorePaintU_drawing_events:
         #        - stop
         #    - determine cancelled passively
         #    - ratelimit <player> 1t
-#
+        #
         #    - spawn morepaintu_frame_hitbox_entity <context.entity.location.below[0.5].backward[0.45]> save:hitbox
         #    - spawn morepaintu_canvas_entity <context.entity.location> save:canvas
-#
+        #
         #    - define hitbox <entry[hitbox].spawned_entity>
         #    - define canvas <entry[canvas].spawned_entity>
-#
+        #
         #    - flag <[frame]> canvas:<[canvas]>
         #    - flag <[hitbox]> canvas:<[canvas]>
         #    - flag <[hitbox]> frame:<[frame]>
@@ -118,6 +203,8 @@ MorePaintU_drawing_events:
             - narrate <[canvas_x]>_<[canvas_y]>
 
             - define canvas_data <[canvas_data].proc[morepaintu_canvas_data_set_pixel].context[<[canvas_x]>|<[canvas_y]>|255,0,12]>
+            - if <[canvas_x].add[1]> <= 32:
+                - define canvas_data <[canvas_data].proc[morepaintu_canvas_data_set_pixel].context[<[canvas_x].add[1]>|<[canvas_y]>|255,0,12]>
 
             - adjust <[canvas]> text:<[canvas_data].proc[morepaintu_canvas_data_to_display_text]>
             - flag <[canvas]> morepaintu_canvas_data:<[canvas_data]>
@@ -132,8 +219,8 @@ MorePaintU_drawing_managment_events:
             - ratelimit <player> 1t
 
             - define canvas_data <context.entity.flag[morepaintu_canvas].flag[morepaintu_canvas_data]>
-            - define lore <[canvas_data].proc[MorePaintU_canvas_data_to_lore_text]>
-            - drop <item[morepaintu_sketch].with[lore=<[lore]><&nl>].with_flag[morepaintu_canvas_data:<[canvas_data]>]> <context.entity.flag[morepaintu_frame].location.forward[0.1]>
+            - define lore <[canvas_data].proc[MorePaintU_painting_generate_lore]>
+            - drop <item[morepaintu_sketch].with[lore=<[lore]>].with_flag[morepaintu_canvas_data:<[canvas_data]>]> <context.entity.flag[morepaintu_frame].location.forward[0.1]>
 
             - run morepaintu_canvas_remove def:<context.entity>
 
@@ -142,19 +229,18 @@ MorePaintU_drawing_managment_events:
             - spawn item_frame <context.hanging.location> save:frame
             - define frame <entry[frame].spawned_entity>
             - run morepaintu_canvas_spawm def:<[frame]>|<context.item>
+
         after player places painting item:MorePaintU_sketch:
             - remove <context.hanging>
-
-
 
 #-------------------
 MorePaintU_canvas_spawm:
     type: task
-    definitions: frame|item
     debug: false
+    definitions: frame|item
     script:
 
-        - adjust <[frame]> framed:filled_map
+        - adjust <[frame]> framed:filled_map[custom_model_data=1000]
 
         - spawn morepaintu_frame_hitbox_entity <[frame].location.below[0.5].backward[0.45]> save:hitbox
         - spawn morepaintu_canvas_entity <[frame].location> save:canvas
@@ -172,8 +258,8 @@ MorePaintU_canvas_spawm:
 
 MorePaintU_canvas_remove:
     type: task
-    definitions: hitbox
     debug: false
+    definitions: hitbox
     script:
         - remove <[hitbox].flag[morepaintu_canvas]>
         - remove <[hitbox].flag[morepaintu_frame]>
@@ -182,13 +268,21 @@ MorePaintU_canvas_remove:
 #-------------------
 MorePaintU_canvas_data_to_display_text:
     type: procedure
-    definitions: canvas_data
     debug: false
+    definitions: canvas_data
     script:
         - define text <empty>
         - foreach <[canvas_data]> as:row:
-            - define text <[text]><[row].separated_by[y]>
+            - define text <[text]><[row].parse_tag[<&color[#<[parse_value]>]>x].separated_by[y]>
         - determine <[text].font[morepaintu:font]>
+
+
+MorePaintU_painting_generate_lore:
+    type: procedure
+    debug: false
+    definitions: canvas_data
+    script:
+        - determine KEK<&nl><[canvas_data].proc[MorePaintU_canvas_data_to_lore_text]><&nl>
 
 
 MorePaintU_canvas_data_to_lore_text:
@@ -196,25 +290,29 @@ MorePaintU_canvas_data_to_lore_text:
     debug: false
     definitions: canvas_data
     data:
-        32: k
-        16: l
-        8: m
+        48: i
+        32: j
+        24: n
+        16: k
+        8: l
+        4: m
+        2: n
+        1: o
     script:
-        - define scaling 2
-        - define text <white><empty>
-        - define end <script.data_key[data.<[canvas_data].size.div[<[scaling]>]>]>
+        - define scaling 4
+        - define text <empty>
+        - define end <script.data_key[data.<[canvas_data].get[1].size.div[<[scaling]>]>]>
 
         - define row_number 0
-        - define current_end <script.data_key[data.<[canvas_data].size.div[<[scaling]>]>]>
+        - define current_end <script.data_key[data.<[canvas_data].get[1].size.div[<[scaling]>]>]>
 
         - foreach <[canvas_data].proc[morepaintu_get_every_n_from_list].context[<[scaling]>]> as:row:
-            - define text <[text]><element[<[row].proc[morepaintu_get_every_n_from_list].context[<[scaling]>].separated_by[y].replace_text[x].with[<[row_number]>].font[morepaintu:font]><[current_end]>].font[morepaintu:font]>
-
+            - define text <[text]><element[<[row].proc[morepaintu_get_every_n_from_list].context[<[scaling]>].parse_tag[<&color[#<[parse_value]>]><[row_number]>].separated_by[y].font[morepaintu:font]><[current_end]>].font[morepaintu:font]>
             - define row_number:+:1
 
-            - if <[row_number]> == 9:
+            - if <[row_number]> == 4:
                 - define current_end <&nl>
-            - else if <[row_number]> == 10:
+            - else if <[row_number]> == 5:
                 - define row_number 0
                 - define current_end <[end]>
             - else:
@@ -233,13 +331,13 @@ MorePaintU_get_every_n_from_list:
             - define result:->:<[list].get[<[i].mul[<[n]>].add[1]>]>
         - determine <[result]>
 
-
+#-----------------------------------
 MorePaintU_canvas_data_set_pixel:
     type: procedure
     debug: false
     definitions: canvas_data|x|y|color
     script:
-        - define canvas_data[<[y]>]:<[canvas_data].get[<[y]>].set_single[<&color[<[color]>]>x<white>].at[<[x]>]>
+        - define canvas_data[<[y]>]:<[canvas_data].get[<[y]>].set_single[<color[<[color]>].hex.substring[2]>].at[<[x]>]>
         - determine <[canvas_data]>
 
 
@@ -248,8 +346,31 @@ MorePaintU_canvas_data_generate:
     debug: false
     definitions: x|y
     script:
-        - determine <element[x].repeat_as_list[<[x]>].repeat_as_list[<[y]>]>
+        #- define color 235,235,200
+        - define color <util.random.int[0].to[255]>,<util.random.int[0].to[255]>,<util.random.int[0].to[255]>
+        #- define color 0,0,0
+        #- define color 255,255,255
+        #- determine <element[<[color]>].repeat_as_list[<[x]>].repeat_as_list[<[y]>]>
+        - define color <color[<[color]>].hex.substring[2]>
+        - determine <element[<[color]>].repeat_as_list[<[x]>].repeat_as_list[<[y]>]>
+        #- determine <element[<element[<[color]>].repeat[<[x]>]>].repeat[<[y]>]>
 
+
+#TODO UNUSED
+MorePaintU_canvas_data_decode:
+    type: procedure
+    debug: false
+    definitions: canvas_data|x|y
+    script:
+        - define result <list[]>
+        - repeat <[y]> from:0 as:i:
+            - define row <[canvas_data].substring[<[i].mul[<[x]>].add[1]>,<[i].mul[<[x]>].add[<[x].mul[6]>]>]>
+            - define elements <list[]>
+            - repeat <[x]> from:0 as:j:
+                - define element <[row].substring[<[j].mul[6].add[1]>,<[j].mul[6].add[6]>]>
+                - define elements:->:<[element]>
+            - define result:->:<[elements]>
+        - determine <[result]>
 
 MorePaintU_canvas_display_line_width:
     type: procedure

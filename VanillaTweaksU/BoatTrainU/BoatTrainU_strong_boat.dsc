@@ -168,6 +168,7 @@ BoatTrainU_strong_boat_events:
             - determine cancelled passively
             - run BoatTrainU_seat_strong_boat def:<context.entity>
             #- wait 1s
+
         #TODO FIX
         after player right clicks BoatTrainU_strong_boat_seat_entity cancelled:true:
             - ratelimit <player> 1t
@@ -350,6 +351,7 @@ BoatTrainU_remove_strong_boat:
         - drop boattrainu_strong_boat <[base].location>
         - remove <[base].proc[boattrainu_get_seat]>
         - remove <[base].proc[boattrainu_get_display]>
+        - wait 1t
         - if <[base].is_spawned>:
             - remove <[base]>
 
