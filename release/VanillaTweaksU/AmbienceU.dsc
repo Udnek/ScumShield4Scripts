@@ -10,34 +10,64 @@ AmbienceU_show_fog:
 
         - repeat <[cycles]> as:cycle:
 
+            - define viewers <list[]>
+
             - foreach <server.online_players> as:__player:
 
                 - if !<player.location.exists>:
                     - foreach next
 
                 - define can_have_fog <player.location.world.environment.equals[NORMAL].and[<player.location.downfall_type.equals[RAIN]>]>
-                - define have_fog <player.bossbar_ids.contains[AmbienceU_fog]>
 
-                #- announce "can_have_fog:<[can_have_fog]> have_fog:<[have_fog]>"
-
-                - if <[have_fog]> && <[can_have_fog]>:
+                - if <[can_have_fog]>:
+                    - define viewers:->:<player>
                     - playeffect effect:cloud at:<player.location> targets:<player> offset:10 visibility:200 quantity:<[quantity]>
-                    - foreach next
 
-                - else if <[can_have_fog]> && !<[have_fog]>:
-                    - bossbar auto AmbienceU_fog players:<server.bossbar_viewers[AmbienceU_fog].if_null[<list[]>].include[<player>]> options:CREATE_FOG
 
-                - else if !<[can_have_fog]> && <[have_fog]>:
-                    - define viewers <server.bossbar_viewers[AmbienceU_fog].if_null[<list[]>].exclude[<player>]>
-                    - if <[viewers].size> == 0:
-                        - bossbar remove AmbienceU_fog
-                    - else:
-                        - bossbar auto AmbienceU_fog players:<[viewers]> options:CREATE_FOG
+            - if <[viewers].size> == 0:
+                - if <server.current_bossbars.contains[AmbienceU_fog]>:
+                    - bossbar remove AmbienceU_fog
+            - else:
+                - bossbar auto AmbienceU_fog players:<[viewers]> options:CREATE_FOG
 
             - wait <[time_between_cycles]>
 
+
+
         - if <server.current_bossbars.contains[AmbienceU_fog]>:
             - bossbar remove AmbienceU_fog
+
+
+#            - define viewers <list[]>
+#
+#            - foreach <server.online_players> as:__player:
+#
+#                - if !<player.location.exists>:
+#                    - foreach next
+#
+#                - define can_have_fog <player.location.world.environment.equals[NORMAL].and[<player.location.downfall_type.equals[RAIN]>]>
+#                - define have_fog <player.bossbar_ids.contains[AmbienceU_fog]>
+#
+#
+#                #- if <[have_fog]> && <[can_have_fog]>:
+#                #    - playeffect effect:cloud at:<player.location> targets:<player> offset:10 visibility:200 quantity:<[quantity]>
+#                #    - foreach next
+#
+#                - else if <[can_have_fog]> && !<[have_fog]>:
+#                    - define viewers:->:<player>
+#                    #- bossbar auto AmbienceU_fog players:<server.bossbar_viewers[AmbienceU_fog].if_null[<list[]>].include[<player>]> options:CREATE_FOG
+#                    - foreach next
+#
+#                - else if !<[can_have_fog]> && <[have_fog]>:
+#                    - define viewers <server.bossbar_viewers[AmbienceU_fog].if_null[<list[]>].exclude[<player>]>
+#                    - if <[viewers].size> == 0:
+#                        - bossbar remove AmbienceU_fog
+#                    - else:
+#                        - bossbar auto AmbienceU_fog players:<[viewers]> options:CREATE_FOG
+#                    - foreach next
+#
+#            - wait <[time_between_cycles]>
+
 
 # TODO DO NOT WORK
 AmbienceU_show_wind:
@@ -71,3 +101,4 @@ AmbienceU_actions:
     events:
         after weather clears in world:
             - run AmbienceU_show_fog def:<duration[<util.random.int[280].to[380]>s]>
+            #- run AmbienceU_show_fog def:<duration[<util.random.int[10].to[10]>s]>

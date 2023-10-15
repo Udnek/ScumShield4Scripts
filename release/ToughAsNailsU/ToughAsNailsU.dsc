@@ -63,10 +63,10 @@ ToughAsNailsU_armor_data:
         diamond_leggings: 1.15
         diamond_boots: 1.15
 
-        netherite_helmet: 1.1
-        netherite_chestplate: 1.1
-        netherite_leggings: 1.1
-        netherite_boots: 1.1
+        netherite_helmet: 0.99
+        netherite_chestplate: 0.99
+        netherite_leggings: 0.99
+        netherite_boots: 0.99
 
     armor_add:
         leather_helmet: 3
@@ -174,7 +174,7 @@ ToughAsNailsU_armor_impact_calculator:
         - define add 0
         - foreach <[equipment_map]> as:item:
             - define name <[item].proc[utilsu_item_actual_name]>
-            - define mul:*:<element[1].sub[<[item].enchantment_map.get[ToughAsNailsU_nailer].if_null[0]>]>
+            - define mul:*:<element[1].sub[<[item].enchantment_map.get[ToughAsNailsU_nailer].if_null[0].mul[0.12]>]>
 
             - define mul:*:<[data].data_key[armor_mul].get[<[name]>].if_null[1]>
             - define add:+:<[data].data_key[armor_add].get[<[name]>].if_null[0]>
