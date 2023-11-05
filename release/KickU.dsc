@@ -5,6 +5,8 @@ KickU_command:
     description: kicku
     usage: /kicku
     permission: kicku.kicker
+    tab completions:
+        1: <server.online_players.parse[name]>
     script:
         - if <context.args.size> != 1:
             - stop
@@ -12,7 +14,7 @@ KickU_command:
         - define player <server.match_player[<[name]>]>
         - if <[player].if_null[null]> == null:
             - stop
-        - run whitelistu_load_whitelist
+        - ~run whitelistu_load_whitelist
         - if !<[player].name.proc[whitelistu_is_in_whitelist]>:
             - kick <[player]>
         - run whitelistu_unload_whitelist

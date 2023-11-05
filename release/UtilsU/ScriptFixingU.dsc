@@ -9,9 +9,10 @@ ScriptFixingU_events:
             - define result <context.item.proc[autoloreu_generate]>
             - if <context.item.script.exists>:
                 - define script_item <item[<context.item.script.name>]>
-                - define result <[result].with[display=<[script_item].display>]>
-                - if <[result].with[quantity=1]> == <[script_item]>:
-                    - determine <[script_item].with[quantity=<[result].quantity>]>
+                - if <[script_item].has_display>:
+                    - define result <[result].with[display=<[script_item].display>]>
+                    - if <[result].with[quantity=1]> == <[script_item]>:
+                        - determine <[script_item].with[quantity=<[result].quantity>]>
 
             - determine <[result]>
 

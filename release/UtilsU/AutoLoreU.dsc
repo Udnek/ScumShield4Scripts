@@ -5,8 +5,11 @@ AutoLoreU_generate:
     script:
         - define item <[item].with[lore=]>
         - if <[item].script.exists>:
-            - define lore <item[<[item].script.name>].lore.if_null[]>
+            - define lore <item[<[item].script.name>].lore.if_null[<empty>]>
         - else:
+            - define lore <empty>
+
+        - if <[item].material.name> == enchanted_book:
             - define lore <empty>
 
         - foreach <[item].enchantment_map> key:name as:level:

@@ -22,7 +22,7 @@ ToughAsNailsU_blocks_data:
         blast_furnace: 9
 
     respawn_anchor_blue_ice_around:
-        respawn_anchor: -3000
+        respawn_anchor: -5000
 
     blocks_below:
         powder_snow: -6
@@ -521,18 +521,18 @@ ToughAsNailsU_autoupdate_temperature:
     debug: false
     script:
         - define blocks_below_data <script[toughasnailsu_blocks_data].data_key[blocks_below]>
-        - define blocks_around_impact 0
 
         - define armor_mul 1
         - define armor_add 0
 
         - define biome_humidity 0
         - define biome_temperature 0
+        - define sun 0
         - define sun_final 0
         - define step 1
 
         - while <player.is_online>:
-            - if <player.is_spawned> && ( <player.gamemode> matches SURVIVAL|ADVENTURE ):
+            - if <player.is_spawned> && ( <player.gamemode> in SURVIVAL|ADVENTURE ):
                 - define step:--
 
                 - if <[step]> == 0:
@@ -569,7 +569,6 @@ ToughAsNailsU_autoupdate_temperature:
                 - if <player.has_effect[fire_resistance]> && <[result]> > 0:
                     - define result 0
 
-                #- else:
 
                 - define temperature <player.flag[ToughAsNailsU.temperature]>
 
@@ -623,12 +622,21 @@ ToughAsNailsU_autoupdate_temperature:
                     - define string "<green>temp:<player.flag[ToughAsNailsU.temperature]><white>|step:<[step]>|b_around:<[blocks_around_impact]> b_below:<[block_below_impact]>|biome:<player.location.biome.name> <yellow>hum:<[biome_humidity]> <green>temp:<[biome_temperature]><white>|altitude:<[altitude_impact]>|sun:<[sun]> sun_final:<[sun_final]>|activity:<[activity]>|wet:<[wet]>|food:<[food]> expire:<player.flag_expiration[ToughAsNailsU.food_temperature].from_now.formatted.if_null[0]>|weather:<[weather]>|armor_mul:<[armor_mul]>  armor_add:<[armor_add]>|result:<[result]>|<red>final_result:<[final_result]>"
                     - sidebar set title:ToughAsNailsU_autoupdate values:<[string]> players:<player>
 
+                - wait 2t
+
 
             - else:
                 - define step 1
-                - define blocks_around_impact 0
 
-            - wait 3t
+                - define armor_mul 1
+                - define armor_add 0
+
+                - define biome_humidity 0
+                - define biome_temperature 0
+                - define sun_final 0
+
+
+            - wait 1t
 
 
 #--------------------------------
@@ -650,6 +658,7 @@ ToughAsNailsU_base_actions:
                 - run toughasnailsu_send_to_anabiosis
 
         after player respawns:
+            - narrate ok
             - adjust <player> food_level:10
             - flag <player> ToughAsNailsU.thirst:10
             - flag <player> ToughAsNailsU.temperature:0
@@ -657,6 +666,11 @@ ToughAsNailsU_base_actions:
 
             - if <player.has_flag[ToughAsNailsU.anabiosis]>:
                 - run toughasnailsu_remove_anabiosis
+
+        after player dies:
+            - narrate ok
+            - flag <player> ToughAsNailsU.temperature:0
+
 
         after player changes gamemode to creative:
             - sidebar remove
@@ -667,6 +681,7 @@ ToughAsNailsU_actions:
     type: world
     debug: false
     events:
+
         on player changes food level:
             - define new <context.food>
             - define old <player.food_level>
@@ -752,8 +767,6 @@ ToughAsNailsU_anabiosis_actions:
     type: world
     debug: false
     events:
-        #on player walks flagged:ToughAsNailsU.anabiosis:
-        #    - determine cancelled
 
         on player jumps flagged:ToughAsNailsU.anabiosis:
             - determine cancelled
@@ -768,9 +781,6 @@ ToughAsNailsU_anabiosis_actions:
             - if <context.entity.is_spawned>:
                 - remove <context.entity>
 
-        #on player kicked for flying:
-        #    - determine cancelled passively
-        #    - narrate <context.reason>
 
 ToughAsNailsU_crafting_actions:
     type: world
