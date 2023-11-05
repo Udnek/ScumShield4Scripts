@@ -552,7 +552,7 @@ ToughAsNailsU_nailer_enchanted_book:
             output_quantity: 1
             category: equipment
             input:
-            - air|material:netherite_scrap|air
+            - air|material:magma_cream|air
             - material:fire_charge|material:book|material:snowball
             - air|material:amethyst_shard|air
     lore:

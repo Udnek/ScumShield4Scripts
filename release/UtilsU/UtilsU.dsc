@@ -53,6 +53,14 @@ UtilsU_entity_actual_name:
     debug: false
     definitions: entity
     script:
-        - if <[entity].script.exists>:
-            - determine <[entity].script.name>
+        - determine <[entity].script.name> if:<[entity].script.exists>
         - determine <[entity].entity_type>
+
+UtilsU_all_items_in_inventory:
+    type: procedure
+    debug: false
+    definitions: inventory|item[ItemTag or Name]
+    script:
+        - define slots <[inventory].find_all_items[<[item]>]>
+        - determine <list[]> if:<[slots].equals[0]>
+        - determine <[inventory].slot[<[slots]>]>

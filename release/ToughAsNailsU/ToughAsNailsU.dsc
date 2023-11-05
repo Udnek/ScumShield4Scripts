@@ -359,7 +359,9 @@ ToughAsNailsU_send_to_anabiosis:
 
         - flag <player> ToughAsNailsU.anabiosis
         - adjust <player> add_attribute_modifiers:<[attributes]>
-        - adjust <player> passenger:<entity[ToughAsNailsU_anabiosis_entity]>
+        #- adjust <player> passenger:<entity[ToughAsNailsU_anabiosis_entity]>
+        - mount <entity[ToughAsNailsU_anabiosis_entity]>|<player> save:display
+        - look <entry[display].mounted_entities.get[1]> pitch:0
 
         - run toughasnailsu_advancement_anabiosis
         #- adjust <player> spectate:<player.passenger>
@@ -524,7 +526,10 @@ ToughAsNailsU_autoupdate_temperature:
         - define armor_mul 1
         - define armor_add 0
 
-        - define step 8
+        - define biome_humidity 0
+        - define biome_temperature 0
+        - define sun_final 0
+        - define step 1
 
         - while <player.is_online>:
             - if <player.is_spawned> && ( <player.gamemode> matches SURVIVAL|ADVENTURE ):
@@ -541,15 +546,13 @@ ToughAsNailsU_autoupdate_temperature:
 
                 - else if <[step].mod[7]> == 0:
                     - define biome_humidity <player.location.biome.humidity.round_to[5]>
-
-                    #- define biome_temperature <player.location.temperature>
                     - define biome_temperature <player.location.biome.base_temperature.round_to[5]>
 
                     - define sun <proc[toughasnailsu_true_sunlight].context[<player.location>]>
                     - define sun_final <[sun].sub[0.65].mul[11]>
 
+
                 - define altitude_impact <player.location.y.round.sub[62].mul[-0.05]>
-                #- define altitude_impact 0
 
                 - define block_below_impact <[blocks_below_data].get[<player.location.below[0.6].material.name>].if_null[0]>
                 - define activity <player.is_sprinting.or[<player.swimming>].if_true[1].if_false[0]>
@@ -564,27 +567,27 @@ ToughAsNailsU_autoupdate_temperature:
 
                 ## FIRE RESISTANCE
                 - if <player.has_effect[fire_resistance]> && <[result]> > 0:
-                    - define final_result 0
+                    - define result 0
+
+                #- else:
+
+                - define temperature <player.flag[ToughAsNailsU.temperature]>
+
+                ## ADOPTATION
+                - if ( <[temperature]> >= 0 && <[result]> > 0 ) || ( <[temperature]> <= 0 && <[result]> < 0 ):
+                    - define result:*:0.5
+
+                ## NATURAL RESTORE
+                - if <[result].abs> < 13:
+                    - flag <player> ToughAsNailsU.temperature_stabilization:true
+                    - if <[temperature].abs> < 6:
+                        - define final_result <[temperature].mul[-1]>
+                    - else:
+                        - define final_result <[temperature].is_less_than[0].if_true[6].if_false[-6]>
 
                 - else:
-
-                    - define temperature <player.flag[ToughAsNailsU.temperature]>
-
-                    ## ADOPTATION
-                    - if ( <[temperature]> > 0 && <[result]> > 0 ) || ( <[temperature]> < 0 && <[result]> < 0 ):
-                        - define result:*:0.5
-
-                    ## NATURAL RESTORE
-                    - if <[result].abs> < 13:
-                        - flag <player> ToughAsNailsU.temperature_stabilization:true
-                        - if <[temperature].abs> < 6:
-                            - define final_result <[temperature].mul[-1]>
-                        - else:
-                            - define final_result <[temperature].is_less_than[0].if_true[6].if_false[-6]>
-
-                    - else:
-                        - flag <player> ToughAsNailsU.temperature_stabilization:!
-                        - define final_result <[result].mul[0.15]>
+                    - flag <player> ToughAsNailsU.temperature_stabilization:!
+                    - define final_result <[result].mul[0.15]>
 
 
 
@@ -619,6 +622,12 @@ ToughAsNailsU_autoupdate_temperature:
                 - if <server.has_flag[ToughAsNailsU.debug]>:
                     - define string "<green>temp:<player.flag[ToughAsNailsU.temperature]><white>|step:<[step]>|b_around:<[blocks_around_impact]> b_below:<[block_below_impact]>|biome:<player.location.biome.name> <yellow>hum:<[biome_humidity]> <green>temp:<[biome_temperature]><white>|altitude:<[altitude_impact]>|sun:<[sun]> sun_final:<[sun_final]>|activity:<[activity]>|wet:<[wet]>|food:<[food]> expire:<player.flag_expiration[ToughAsNailsU.food_temperature].from_now.formatted.if_null[0]>|weather:<[weather]>|armor_mul:<[armor_mul]>  armor_add:<[armor_add]>|result:<[result]>|<red>final_result:<[final_result]>"
                     - sidebar set title:ToughAsNailsU_autoupdate values:<[string]> players:<player>
+
+
+            - else:
+                - define step 1
+                - define blocks_around_impact 0
+
             - wait 3t
 
 

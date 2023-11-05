@@ -72,6 +72,8 @@ RpgU_smithing_events:
 
 
         on player prepares anvil craft item:
+            - if <context.item.repair_cost.exists>:
+                - determine <context.item.with[repair_cost=0]> passively
             - determine <context.inventory.slot[1].enchantment_types.size.add[<context.inventory.slot[2].enchantment_types.size>]>
 
 

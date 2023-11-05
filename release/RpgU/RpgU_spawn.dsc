@@ -205,8 +205,6 @@ RpgU_generate_equipment_for_mob:
     script:
         - define loc <[entity].location>
         - if <[loc].world.environment> == NORMAL:
-            #- define altitude_mul <element[1].sub[<[loc].y.add[64].div[<[loc].world.max_height.add[64]>]>].round_to[2].add[0.4]>
-            #- define altitude_mul:*:<[altitude_mul]>
             - define altitude_mul <element[1].sub[<[loc].y.add[64].div[<[loc].world.max_height.add[64]>]>].round_to[5].mul[2.5]>
         - else:
             - define altitude_mul 1
@@ -217,8 +215,6 @@ RpgU_generate_equipment_for_mob:
         - define mob_type <[mob_data].get[type]>
 
         - define level <[altitude_mul].mul[<[mob_diff_mul]>]>
-        #- announce lvl:<[level]>
-        #- announce alt_mul:<[altitude_mul]>
 
         - define armor <list[]>
         - foreach <[entity].equipment> as:item:
@@ -227,7 +223,7 @@ RpgU_generate_equipment_for_mob:
             - else:
                 - define new_item <item[<[mob_type].proc[rpgu_choose_random_armor].context[<element[5].sub[<[loop_index]>]>]>]>
 
-            - if <[new_item].material.name> != air:
+            - if <[new_item].material.name> != air && <[new_item].proc[rpgu_can_have_upgrades]>:
                 - define item_type <[new_item].proc[rpgu_item_type]>
                 - define item_slot <[new_item].proc[rpgu_get_default_attributes].proc[rpgu_attributes_to_slot]>
                 - define new_item <[new_item].proc[rpgu_generate_attributes].context[<[item_type]>|<[level]>|NULL|<[item_slot]>]>
@@ -265,20 +261,18 @@ RpgU_spawn_events:
         after player joins:
             - adjust <player> attribute_base_values:<map[generic_max_health=14]>
 
-        on entity picks up item:
-            - if !<context.pickup_entity.proc[rpgu_is_equippable]>:
-                - stop
-            - if <context.pickup_entity.entity_type> != PIGLIN:
-                - determine cancelled
-
+        on PIGLIN picks up item:
             - if <server.vanilla_tagged_materials[piglin_loved]> !contains <context.item.material>:
                 - determine cancelled
 
-        on entity spawns chance:50:
-            - if <context.entity.proc[rpgu_is_equippable]>:
-                - define equipment <context.entity.proc[rpgu_generate_equipment_for_mob]>
-                - adjust <context.entity> equipment:<[equipment].get[armor]>
-                - adjust <context.entity> item_in_hand:<[equipment].get[weapon]>
+        on entity spawns:
+            - if !<context.entity.proc[rpgu_is_equippable]>:
+                - stop
+            - adjust <context.entity> can_pickup_items:false
+            - stop if:<util.random_chance[70]>
+            - define equipment <context.entity.proc[rpgu_generate_equipment_for_mob]>
+            - adjust <context.entity> equipment:<[equipment].get[armor]>
+            - adjust <context.entity> item_in_hand:<[equipment].get[weapon]>
 
 
         on entity dies:

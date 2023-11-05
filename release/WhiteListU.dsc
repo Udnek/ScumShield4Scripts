@@ -3,29 +3,14 @@ WhiteListU_events:
     debug: false
     events:
         on player prelogin:
-            - determine <queue> passively
-            - ~run whitelistu_load_whitelist
+            #- determine <queue> passively
+            #- ~run whitelistu_load_whitelist
 
             - run whitelistu_log_message "def:player <red><context.name><gray> tries to join!"
-            - define whitelisted <context.name.proc[whitelistu_is_in_whitelist]>
-            - if !<[whitelisted]>:
-                - determine "KICKED:<red>NOT IN WHITELIST"
-
-            - run whitelistu_unload_whitelist
-
-        #on player logs in:
-        #    - announce to_console <red><player.name>
-        #    - define whitelisted <player.name.proc[whitelistu_is_in_whitelist]>
-        #    - run whitelistu_unload_whitelist
-        #    - if !<[whitelisted]>:
-        #        - determine "KICKED:<red>NOT IN WHITELIST"
-
-        #on player joins:
-        #    - announce to_console <red><player.name>
-        #    - define whitelisted <player.name.proc[whitelistu_is_in_whitelist]>
-        #    - if !<[whitelisted]>:
-        #        - kick <player>
-        #    - run whitelistu_unload_whitelist
+            #- define whitelisted <context.name.proc[whitelistu_is_in_whitelist]>
+            #- if !<[whitelisted]>:
+            #    - determine "KICKED:<red>NOT IN WHITELIST"
+            #- run whitelistu_unload_whitelist
 
 
         after server start:

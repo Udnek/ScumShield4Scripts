@@ -96,6 +96,11 @@ FoodifyU_data:
                 type: speed
                 duration: 30s
             color: *bf3123
+        torchflower:
+            effect:
+                type: saturation
+                duration: 1t
+            color: *ffa500
 
         ## MISC
 
