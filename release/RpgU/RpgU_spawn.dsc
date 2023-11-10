@@ -268,7 +268,7 @@ RpgU_spawn_events:
         on entity spawns:
             - if !<context.entity.proc[rpgu_is_equippable]>:
                 - stop
-            - adjust <context.entity> can_pickup_items:false
+            - adjust <context.entity> can_pickup_items:false if:<context.entity.proc[utilsu_entity_actual_name].equals[PIGLIN].not>
             - stop if:<util.random_chance[70]>
             - define equipment <context.entity.proc[rpgu_generate_equipment_for_mob]>
             - adjust <context.entity> equipment:<[equipment].get[armor]>

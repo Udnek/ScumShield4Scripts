@@ -24,7 +24,7 @@ BoatTrainU_events:
             - if <proc[boattrainu_player_has_leashed_boat]>:
                 - determine cancelled
 
-        on player quits:
+        on player quits bukkit_priority:LOWEST:
             - if <player.is_inside_vehicle>:
                 - if <player.vehicle.proc[boattrainu_has_bolting]>:
                     - mount cancel <player>

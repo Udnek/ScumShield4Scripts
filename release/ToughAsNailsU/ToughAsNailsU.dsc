@@ -359,16 +359,10 @@ ToughAsNailsU_send_to_anabiosis:
 
         - flag <player> ToughAsNailsU.anabiosis
         - adjust <player> add_attribute_modifiers:<[attributes]>
-        #- adjust <player> passenger:<entity[ToughAsNailsU_anabiosis_entity]>
         - mount <entity[ToughAsNailsU_anabiosis_entity]>|<player> save:display
         - look <entry[display].mounted_entities.get[1]> pitch:0
 
         - run toughasnailsu_advancement_anabiosis
-        #- adjust <player> spectate:<player.passenger>
-        #/ex adjust <player> passenger:<entity[ToughAsNailsU_anabiosis_entity]>
-        #- cast <player> jump durathide_particles no_icon no_clear
-        #- wait 3s
-        #- adjust <player> remove_attribute_modifiers:GENERIC_MOVEMENT_SPEED
 
 ToughAsNailsU_remove_anabiosis:
     type: task
@@ -658,7 +652,6 @@ ToughAsNailsU_base_actions:
                 - run toughasnailsu_send_to_anabiosis
 
         after player respawns:
-            - narrate ok
             - adjust <player> food_level:10
             - flag <player> ToughAsNailsU.thirst:10
             - flag <player> ToughAsNailsU.temperature:0
@@ -668,7 +661,6 @@ ToughAsNailsU_base_actions:
                 - run toughasnailsu_remove_anabiosis
 
         after player dies:
-            - narrate ok
             - flag <player> ToughAsNailsU.temperature:0
 
 
@@ -863,27 +855,6 @@ ToughAsNailsU_crafting_actions:
         #        #- announce OK
 
 
-
-        #on player prepares anvil craft item:
-        #    - define level:<context.item.enchantment_map.get[ToughAsNailsU_nailer].if_null[null]>
-        #    - if <[level]> != null:
-        #        - define lore:<context.item.lore.if_null[<list[]>]>
-        #        - repeat <[lore].size> as:i:
-        #            - if <[lore].get[<[i]>].contains[<&translate[toughasnailsu.enchantment.nailer]>]>:
-        #                - define lore:<[lore].remove[<[i]>]>
-        #                - repeat stop
-        #        - define lore:<[lore].insert[<enchantment[ToughAsNailsU_nailer].full_name[<[level]>]>].at[1]>
-        #        - determine <context.item.with[lore=<[lore]>]>
-        #
-        #on player prepares grindstone craft item:
-        #    - define lore:<context.result.lore.if_null[<list[]>]>
-        #    - repeat <[lore].size> as:i:
-        #        - if <[lore].get[<[i]>].contains[<&translate[toughasnailsu.enchantment.nailer]>]>:
-        #            - define lore:<[lore].remove[<[i]>]>
-        #            - repeat stop
-        #    - determine RESULT:<context.result.with[lore=<[lore]>]>
-
-
 ToughAsNailsU_recipes_gui_actions:
     type: world
     debug: false
@@ -939,7 +910,7 @@ ToughAsNailsU_flask_back_to_flask:
     script:
         - define flask <[item].flag[ToughAsNailsU_flask]>
         - define item_f <item[feather].with[custom_model_data=<item[<[item].script.name>].custom_model_data>;flag=item:<[item].script.name>]>
-        - define flask <[flask].with[inventory_contents=<[flask].inventory_contents.include[<[item_f]>]>]>
+        - define flask <[flask].with[inventory_contents=<[flask].inventory_contents.insert[<[item_f]>].at[1]>]>
 
         - determine <[flask]>
 

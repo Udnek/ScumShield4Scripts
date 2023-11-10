@@ -9,11 +9,7 @@ HudU_get_hud:
     type: procedure
     debug: false
     script:
-        - define tickets <player.flag[hudu.tickets]>
-        - define final_message <empty>
-        - foreach <[tickets]> as:ticket:
-            - define final_message <[final_message]><[ticket]>
-        - determine <[final_message]>
+        - determine <player.flag[hudu.tickets].values.separated_by[]>
 
 HudU_create_ticket:
     type: task
