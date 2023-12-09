@@ -259,7 +259,12 @@ RpgU_spawn_events:
     debug: false
     events:
         after player joins:
+            # TODO FIX IN FUTURE VERSIONS
             - adjust <player> attribute_base_values:<map[generic_max_health=14]>
+            - define health <player.health_percentage.div[100]>
+            - wait 1t
+            - adjust <player> health:<player.health_max.mul[<[health]>]>
+
 
         on PIGLIN picks up item:
             - if <server.vanilla_tagged_materials[piglin_loved]> !contains <context.item.material>:
