@@ -82,6 +82,7 @@ EndPortalU_display_chest_entity:
     entity_type: block_display
     mechanisms:
         material: barrel[direction=UP]
+        translation: -0.5,0,-0.5
         scale: 0,0,0
 #----------------------
 EndPortalU_ice_eye:
@@ -278,7 +279,7 @@ EndPortalU_portal_events:
             - define all_entities <[eye_entities]>
 
             - if !<[chest_loc].has_inventory>:
-                - fakespawn EndPortalU_display_chest_entity <[chest_loc]> players:<server.online_players> save:chest d:5s
+                - fakespawn EndPortalU_display_chest_entity <[chest_loc].center.below[0.5]> players:<server.online_players> save:chest d:5s
                 - define all_entities:->:<entry[chest].faked_entity>
 
 
