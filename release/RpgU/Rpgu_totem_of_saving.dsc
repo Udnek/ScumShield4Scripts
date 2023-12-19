@@ -39,8 +39,15 @@ RpgU_totem_of_saving_events:
                 - stop
             - define drops <inventory[generic[contents=<context.drops>;size=54]]>
             - take item:RpgU_totem_of_saving from:<[drops]>
-            - run RpgU_totem_of_saving_spawn_grave def.location:<player.location> def.items:<list_single[<[drops].list_contents.exclude[<item[air]>]>]> def.owner:<player>
+            - run RpgU_totem_of_saving_spawn_grave def.location:<player.location> def.items:<list_single[<[drops].list_contents.exclude[<item[air]>]>]> def.owner:<player> def.cause:<context.cause>
+
             - determine NO_DROPS passively
+
+        after player teleports:
+            - if <context.cause> != END_GATEWAY:
+                - stop
+            - cast slow_falling duration:7s
+
 
         after player right clicks RpgU_totem_of_saving_entity:
             - ratelimit <player> 1t
@@ -56,12 +63,21 @@ RpgU_totem_of_saving_events:
 RpgU_totem_of_saving_spawn_grave:
     type: task
     debug: false
-    definitions: location|items|owner
+    definitions: location|items|owner|cause
     script:
         - spawn rpgu_totem_of_saving_entity save:grave
-        - flag <entry[grave].spawned_entity> GraveU_contents:<[items].get[1]>
-        - flag <entry[grave].spawned_entity> GraveU_owner:<[owner]>
-        - cast invisibility <entry[grave].spawned_entity>
+        - define grave <entry[grave].spawned_entity>
+        - flag <[grave]> GraveU_contents:<[items].get[1]>
+        - flag <[grave]> GraveU_owner:<[owner]>
+        - cast invisibility <[grave]>
+        - if <[cause]> != VOID:
+            - stop
+
+        - teleport <[grave]> <[grave].location.with_y[<[grave].location.world.min_height>]>
+        - cast levitation duration:6s amplifier:5 <[grave]>
+        - chunkload <[grave].location.chunk> duration:10s
+        - wait 6s
+        - adjust <[grave]> gravity:false
 
 
 RpgU_totem_of_saving_remove_grave:
